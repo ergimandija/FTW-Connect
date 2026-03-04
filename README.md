@@ -9,7 +9,7 @@ A social media platform project for FTW.
 - The `config` file is ignored because it contains sensitive database connection data.
 
 ---
-
+```
 ## Folder Structure
 FTW-Connect/
 │
@@ -35,7 +35,7 @@ FTW-Connect/
 ├── header.php # Reusable header component
 ├── footer.php # Reusable footer component
 └── navbar.php # Reusable navigation bar
-
+```
 
 ---
 
