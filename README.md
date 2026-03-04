@@ -21,20 +21,20 @@ FTW-Connect/
 │ ├── login.php
 │ ├── register.php
 │ └── assets/
-│ ├── img/ # Logos, backgrounds, icons, etc.
-│ └── css/ # Optional: additional CSS files
+│     └── img/ # Logos, backgrounds, icons, etc.
+│     
 │
 ├── database/
-│ └── ftw_connect.sql # SQL file to import database
+│ └── schema.sql # SQL file to import database
 │
 └── src/
-├── db/
-│ └── connect.php # DB connection script
-│
-└── includes/
-├── header.php # Reusable header component
-├── footer.php # Reusable footer component
-└── navbar.php # Reusable navigation bar
+  ├── db/
+  │ └── connect.php # DB connection script
+  │
+  └── includes/
+    ├── header.php # Reusable header component
+    ├── footer.php # Reusable footer component
+  └── navbar.php # Reusable navigation bar
 ```
 
 ---
