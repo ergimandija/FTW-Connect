@@ -1,0 +1,65 @@
+body {
+    height: 100vh;
+    margin: 0;
+    background-color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.left-side {
+    background-color: #e0e0e0;
+    border-right: 1px solid #e9ecef;
+}
+
+.logo-box {
+    text-align: center;
+    padding: 20px;
+}
+
+/* .logo-img {
+            max-width: 500px;
+            height: auto;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.05));
+        }
+ */
+/* Login Button Styling */
+.login-btn {
+    background-color: #116395;
+    /* Dunkelblau/Cyan aus dem Logo-Konzept */
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    background-color: #0d4d74;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(17, 99, 149, 0.2);
+}
+
+.form-control {
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    border-color: #116395;
+    box-shadow: 0 0 0 0.25rem rgba(17, 99, 149, 0.1);
+}
+
+.accent-text {
+    color: #116395;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.accent-text:hover {
+    color: #89B41C;
+    /* Das Grün als Hover-Akzent */
+}
+
+h3 {
+    font-weight: 700;
+    color: #333;
+}
+
