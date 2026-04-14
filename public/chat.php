@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="assets/js/chat.js" defer></script>    
+    <script src="assets/js/chat.js" defer></script>
+    
 </head>
 
 <!---- lines To be removed in later updates -->
@@ -17,22 +18,16 @@ include '../config/config.php';
 <!-------------------------------------------->
 <body>
     <h1>Chat </h1>
-    <div class="row" style="padding:2px; display:flex; flex-direction:column;">
+    <div style="padding:2px; margin: 10px; height: 200px;" class="overflow-auto" id="messageContainer">
 
-        <div class="col">
-            <div data-bs-spy="scroll" id="messageContainer" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
-        
-            </div>
-        </div>
     </div>
-    </div>
-    <form id="chatForm">
+    <form id="chatForm" >
         <input type="text" id="message" placeholder="send message"> 
         <input type="hidden" id="chatId" value="<?=$_GET['cid'];?>">
         <input type="hidden" id="uid_reference" value="<?=$_SESSION['id']?>">
+        <input type="hidden" id="loadCount" value="1">
         <input type="submit">
     </form>
-
 </body>
 </html>
 
