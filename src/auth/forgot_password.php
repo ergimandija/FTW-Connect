@@ -17,13 +17,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (empty($errors)) {
 
         $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(); // Holt die nächste Zeile als Array
 
-        if ($result->num_rows === 1) {
-
-            $user = $result->fetch_assoc();
+        if ($user) {
             $userId = $user["id"];
 
             $token = bin2hex(random_bytes(32));
@@ -36,10 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 WHERE id = ?
             ");
 
-            $updateStmt->bind_param("ssi", $token, $expires, $userId);
-            $updateStmt->execute();
-            $updateStmt->close();
-
+            $updateStmt->execute([$token, $expires, $userId]);
             $resetLink = "http://localhost:3000/public/reset_password.php?token=" . $token;
 
             $success = "Reset link generated: $resetLink";
@@ -50,6 +44,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $success = "If this email exists, a reset link has been sent.";
         }
 
-        $stmt->close();
     }
 }
+?>

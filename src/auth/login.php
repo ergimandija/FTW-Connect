@@ -4,72 +4,63 @@ session_start();
 
 $errors = [];
 
-
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $username = trim($_POST["email"] ?? "");
     $password = trim($_POST["password"] ?? "");
 
-    $sql = "SELECT id, name, email, pwdHash, failed_attempts, locked_until FROM users WHERE email = ?";
-    $stmt = $db->prepare($sql);
+    try {
+        $sql = "SELECT id, name, email, pwdHash, failed_attempts, locked_until FROM users WHERE email = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
 
-    if ($stmt === false) {
-        die("Prepare failed: " . $db->error);
-    }
+        if ($user) {
+            $uid = $user["id"];
+            $passwordHash = $user["pwdHash"];
+            $failedAttempts = $user["failed_attempts"];
+            $lockedUntil = $user["locked_until"];
 
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $stmt->store_result();
-    if ($stmt->num_rows === 1) {
-        $stmt->bind_result($uid, $name, $email, $passwordHash, $failedAttempts, $lockedUntil);
-        $stmt->fetch();
-
-        if ($lockedUntil && strtotime($lockedUntil) > time()) {
-            $errors[] = "Account is locked. Try again later.";
-        }
-        else {
-            if (password_verify($password, $passwordHash)) {
-
-                $_SESSION["loggedin"] = true;
-                $_SESSION["uid"] = $uid;
-                $_SESSION["name"] = $name;
-                $_SESSION["email"] = $email;
-                $updateSql = "UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?";
-                $updateStmt = $db->prepare($updateSql);
-                $updateStmt->bind_param("i", $uid);
-                $updateStmt->execute();
-                header("Location: index.php");
-                exit();
-            }
+            
+            if ($lockedUntil && strtotime($lockedUntil) > time()) {
+                $errors[] = "Account is locked. Try again later.";
+            } 
             else {
-                $failedAttempts++;
-                $updateSql = "UPDATE users SET failed_attempts = ? WHERE id = ?";
-                $updateStmt = $db->prepare($updateSql);
-                $updateStmt->bind_param("ii", $failedAttempts, $uid);
-                $updateStmt->execute();
-                
+                if (password_verify($password, $passwordHash)) {
+                    $_SESSION["loggedin"] = true;
+                    $_SESSION["uid"] = $uid;
+                    $_SESSION["name"] = $user["name"];
+                    $_SESSION["email"] = $user["email"];
 
-                if ($failedAttempts!=0 && $failedAttempts % 5 == 0) {
-                    $lockUntil = date("Y-m-d H:i:s", time() + 900); 
-                    $lockSql = "UPDATE users SET locked_until = ? WHERE id = ?";
-                    $lockStmt = $db->prepare($lockSql);
-                    $lockStmt->bind_param("si", $lockUntil, $uid);
-                    $lockStmt->execute();
-                    $errors[] = "Account locked due to multiple failed attempts. Try again in 15 minutes.";
+                    $updateStmt = $db->prepare("UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?");
+                    $updateStmt->execute([$uid]);
 
-                    $lockStmt->close();
-
+                    header("Location: index.php");
+                    exit();
+                } 
+                else {
+                    $failedAttempts++;
+                    
+                    if ($failedAttempts % 5 == 0) {
+                        $lockTime = date("Y-m-d H:i:s", time() + 900); 
+                        $lockStmt = $db->prepare("UPDATE users SET failed_attempts = ?, locked_until = ? WHERE id = ?");
+                        $lockStmt->execute([$failedAttempts, $lockTime, $uid]);
+                        $errors[] = "Account locked due to multiple failed attempts. Try again in 15 minutes.";
+                    } else {
+                        $updateStmt = $db->prepare("UPDATE users SET failed_attempts = ? WHERE id = ?");
+                        $updateStmt->execute([$failedAttempts, $uid]);
+                        $errors[] = "Invalid email or password.";
+                    }
                 }
-                
             }
-        $updateStmt->close();
+        } else {
+            $errors[] = "Invalid email or password.";
         }
-        
+
+    } catch (PDOException $e) {
+        error_log($e->getMessage());
+        $errors[] = "A database error occurred.";
     }
-
-    $errors[] = "Invalid email or password.";
-
-    $stmt->close();
-    $db->close();
+    $db = null;
 }
 ?>
