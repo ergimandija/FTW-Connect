@@ -7,11 +7,10 @@ $success = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $name  = trim($_POST["name"] ?? "");
-    $email     = trim($_POST["email"] ?? "");
-    $password  = trim($_POST["password"] ?? "");
+    $name             = trim($_POST["name"] ?? "");
+    $email            = trim($_POST["email"] ?? "");
+    $password         = trim($_POST["password"] ?? "");
     $confirm_password = trim($_POST["confirm_password"] ?? "");
-
 
     if ($name === "") {
         $errors[] = "Name is required.";
@@ -31,32 +30,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (empty($errors)) {
-
-        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-
-
-        $sql = "INSERT INTO users (name, email, pwdHash) VALUES (?, ?, ?)";
-        $stmt = $db->prepare($sql);
-
-        if ($stmt === false) {
-            die("Prepare failed: " . $db->error);
-        }
-
-        $stmt->bind_param("sss", $name, $email, $passwordHash);
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
         try {
-            $stmt->execute();
+            $sql = "INSERT INTO users (name, email, pwdHash) VALUES (?, ?, ?)";
+            $stmt = $db->prepare($sql);
+            
+            $stmt->execute([$name, $email, $passwordHash]);
+            
             $success = "Your account has been created successfully!";
-        } catch (mysqli_sql_exception $e) {
+            
+            $name = $email = ""; 
 
-            if ($e->getCode() === 1062) {
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) {
                 $errors[] = "This email is already registered.";
             } else {
-                $errors[] = "Database error: " . $e->getMessage();
+                error_log($e->getMessage());
+                $errors[] = "A database error occurred. Please try again later.";
             }
         }
-        $stmt->close();
-        $db->close();
+        
     }
 }
 ?>
