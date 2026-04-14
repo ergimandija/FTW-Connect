@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (empty($errors)) {
 
-        $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt = $con->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(); // Holt die nächste Zeile als Array
 
@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $expires = date("Y-m-d H:i:s", time() + 3600);
 
-            $updateStmt = $db->prepare("
+            $updateStmt = $con->prepare("
                 UPDATE users 
                 SET reset_token = ?, reset_expires = ? 
                 WHERE id = ?

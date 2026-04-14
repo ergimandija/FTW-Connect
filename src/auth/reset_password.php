@@ -8,7 +8,7 @@ $token = $_GET['token'] ?? $_POST['token'] ?? '';
 
 if ($token) {
     try {
-        $stmt = $db->prepare("
+        $stmt = $con->prepare("
             SELECT id, reset_expires 
             FROM users 
             WHERE reset_token = ?
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $tokenValid) {
         try {
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-            $update = $db->prepare("
+            $update = $con->prepare("
                 UPDATE users 
                 SET pwdHash = ?, reset_token = NULL, reset_expires = NULL
                 WHERE id = ?

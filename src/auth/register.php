@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         try {
             $sql = "INSERT INTO users (name, email, pwdHash) VALUES (?, ?, ?)";
-            $stmt = $db->prepare($sql);
+            $stmt = $con->prepare($sql);
             
             $stmt->execute([$name, $email, $passwordHash]);
             
