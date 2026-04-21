@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<?php require_once __DIR__ . '/../src/db/db.php'; ?>
+<?php require_once __DIR__ . '/../config/config.php'; ?>
 <?php require_once __DIR__ . '/../src/auth/reset_password.php'; ?>
 
 <html lang="en">

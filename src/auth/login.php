@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     try {
         $sql = "SELECT id, name, email, pwdHash, failed_attempts, locked_until FROM users WHERE email = ?";
-        $stmt = $db->prepare($sql);
+        $stmt = $con->prepare($sql);
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $_SESSION["name"] = $user["name"];
                     $_SESSION["email"] = $user["email"];
 
-                    $updateStmt = $db->prepare("UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?");
+                    $updateStmt = $con->prepare("UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?");
                     $updateStmt->execute([$uid]);
 
                     header("Location: index.php");
@@ -43,11 +43,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     
                     if ($failedAttempts % 5 == 0) {
                         $lockTime = date("Y-m-d H:i:s", time() + 900); 
-                        $lockStmt = $db->prepare("UPDATE users SET failed_attempts = ?, locked_until = ? WHERE id = ?");
+                        $lockStmt = $con->prepare("UPDATE users SET failed_attempts = ?, locked_until = ? WHERE id = ?");
                         $lockStmt->execute([$failedAttempts, $lockTime, $uid]);
                         $errors[] = "Account locked due to multiple failed attempts. Try again in 15 minutes.";
                     } else {
-                        $updateStmt = $db->prepare("UPDATE users SET failed_attempts = ? WHERE id = ?");
+                        $updateStmt = $con->prepare("UPDATE users SET failed_attempts = ? WHERE id = ?");
                         $updateStmt->execute([$failedAttempts, $uid]);
                         $errors[] = "Invalid email or password.";
                     }
@@ -61,6 +61,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         error_log($e->getMessage());
         $errors[] = "A database error occurred.";
     }
-    $db = null;
+    $con = null;
 }
 ?>
