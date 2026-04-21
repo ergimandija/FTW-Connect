@@ -1,6 +1,5 @@
 <?php
-ini_set('session.gc_maxlifetime', 1200); 
-session_start();
+
 
 $errors = [];
 
