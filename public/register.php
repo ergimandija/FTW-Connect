@@ -8,7 +8,7 @@
     <title>Register | FTW Connect</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/styles/login.css">
+    <link rel="stylesheet" href="./assets/styles/login.css">
 </head>
 
 <body>
@@ -17,7 +17,7 @@
 
         <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center left-side">
             <div class="logo-box">
-                <img src="assets/Logo.png" alt="FTW Connect Logo" class="img-fluid logo-img">
+                <img src="assets/img/Logo.png" alt="FTW Connect Logo" class="img-fluid logo-img">
             </div>
         </div>
 
