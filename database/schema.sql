@@ -6,6 +6,10 @@ CREATE TABLE Users (
     role VARCHAR(50),
     status VARCHAR(50),
     profilePicturePath VARCHAR(255),
+    reset_token VARCHAR(255),
+    reset_expires DATETIME,
+    failed_attempts INT DEFAULT 0,
+    locked_until DATETIME NULL;
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
