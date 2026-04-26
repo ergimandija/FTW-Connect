@@ -2,14 +2,15 @@
   <div class="nav-container">
 
     <div class="logo">
-        <img src="./images/logo.png" alt="Logo" class="logo-img">
+        <img src="./assets/img/logo.png" alt="Logo" class="logo-img">
     </div>
 
     <!-- NAVIGATION -->
     <nav class="nav-menu">
       <a href="./index.php" class="nav-item">Home</a>
       <a href="./login.php" class="nav-item">Login</a>
-      <a href="#" class="nav-item">Messages</a>
+      <a href="./feed.php" class="nav-item">Feed</a>
+      <a href="./userchats.php" class="nav-item">Messages</a>
     </nav>
 
     <!-- ICONS -->

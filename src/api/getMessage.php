@@ -8,7 +8,7 @@ if(isset($_GET['cid'])){
     $limit = 25;
     $stmt = $con->prepare('SELECT * FROM chat_user where chat_id = :chid AND user_id = :uid');
     $stmt->bindParam(":chid" , $_GET['cid']);
-    $stmt->bindParam(":uid",$_SESSION['id']);
+    $stmt->bindParam(":uid",$_SESSION['uid']);
     $stmt->execute();
     $check = $stmt->fetch(PDO::FETCH_ASSOC);
     if(!empty($check['chat_id'])){

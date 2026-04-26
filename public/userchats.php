@@ -4,18 +4,17 @@
 <?php 
 include '../src/includes/header.php';
 $stmt = $con->prepare("SELECT distinct chat_id from chat_user where user_id=:id");
-$stmt->bindParam(":id", $_SESSION['id']);
+$stmt->bindParam(":id", $_SESSION['uid']);
 $stmt->execute();
 $idList = $stmt->fetchAll();
 
 function getRecipientName($con, $id){
         $stmt = $con->prepare("SELECT u.name from users as u join chat_user as cu on cu.user_id = u.id  where cu.chat_id = :chatId  and cu.user_id != :currentUserId limit 1");
-        $stmt->bindParam(":currentUserId", $_SESSION['id']);
+        $stmt->bindParam(":currentUserId", $_SESSION['uid']);
         $stmt->bindParam(":chatId", $id);
         $stmt->execute();
         $row =  $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['name'];;
-        
+        return $row['name'];
 }
 ?>
 

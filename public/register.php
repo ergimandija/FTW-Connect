@@ -15,9 +15,9 @@
 <div class="container-fluid h-100">
     <div class="row h-100">
 
-        <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center left-side">
-            <div class="logo-box">
-                <img src="assets/img/Logo.png" alt="FTW Connect Logo" class="img-fluid logo-img">
+        <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center left-side m-0 p-0">
+            <div class="logo-box w-100 h-100 p-0">
+                <img src="assets/img/FH_Technikum_Wien.jpg" alt="FTW Connect Logo" class="w-100 h-100 object-fit-cover">
             </div>
         </div>
 
@@ -25,7 +25,7 @@
             <div style="width: 100%; max-width: 380px; padding: 20px;">
 
                 <div class="text-center d-md-none mb-4">
-                    <img src="assets/Logo.png" alt="Logo" class="img-fluid mb-3" style="max-width: 300px;">
+                    <img src="assets/img/logo.png" alt="Logo" class="img-fluid mb-3" style="max-width: 300px;">
                 </div>
 
                 <h3 class="mb-2">Create an account</h3>
