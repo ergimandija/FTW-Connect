@@ -1,15 +1,10 @@
 <!DOCTYPE html>
-<?php require_once __DIR__ . '/../config/config.php'; ?>
-<?php require_once __DIR__ . '/../src/auth/create_group.php'; ?>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Group | FTW Connect</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/styles/login.css">
-</head>
+<?php include '../src/includes/header.php';?>
+<?php require_once __DIR__ . '/../src/auth/create_group.php'; ?>
+
+
 
 <body>
 <div class="container-fluid h-100">

@@ -1,15 +1,8 @@
 
-<!---- lines To be removed in later updates -->
-<?php
-include '../config/config.php';
-?>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-
-<!-------------------------------------------->
-
-
-<?php
+<!DOCTYPE html>
+<html lang="en">
+<?php 
+include '../src/includes/header.php';
 $stmt = $con->prepare("SELECT distinct chat_id from chat_user where user_id=:id");
 $stmt->bindParam(":id", $_SESSION['id']);
 $stmt->execute();
@@ -26,20 +19,7 @@ function getRecipientName($con, $id){
 }
 ?>
 
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-
-
-<p>
-<div >    
+<div>    
 <?php
 foreach($idList as $chatId){
      $stmt = $con->prepare("SELECT * from chat where id=:id");
