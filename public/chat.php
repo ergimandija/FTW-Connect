@@ -8,6 +8,7 @@
     <div class="mb-3 ms-3 mt-3">
         <a href="group_files.php?cid=<?=$_GET['cid'];?>" class="btn btn-info">View Group Files</a>
         <a href="invite.php?cid=<?=$_GET['cid'];?>" class="btn btn-outline-primary">Invite Members</a>
+        <a href="file_upload.php?cid=<?=$_GET['cid'];?>" class="btn btn-outline-secondary">Upload File</a>
     </div>
     <h1>Chat </h1>
     <div style="padding:2px; margin: 10px; height: 200px;" class="overflow-auto" id="messageContainer">
