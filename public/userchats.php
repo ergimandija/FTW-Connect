@@ -16,7 +16,30 @@ function getRecipientName($con, $id){
         $row =  $stmt->fetch(PDO::FETCH_ASSOC);
         return $row['name'];
 }
+
+if(isset($_GET['cid_arc'])){
+        $message = "Chat Archived successfully";
+       
+}
+
 ?>
+
+<div class="modal fade" id="archiveSuccessModal" tabindex="-1" aria-labelledby="successModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Success</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Chat was archived</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="assets/js/userchats.js" defer></script>
 <div class="p-3 m-3">
         <div class="d-flex" role="search">
@@ -53,10 +76,11 @@ foreach($idList as $chatId){
                     <?= $description ?>
                 </p>
             </div>
-             <button class="btn btn-outline-secondary btn-sm ms-auto archive-btn"
-                    data-chat-id="<?= $chatId["chat_id"] ?>">
+             <a href="<?= './userchats.php?cid_arc=' . $chatId["chat_id"] ?>"
+             data-bs-toggle="modal" data-bs-target="#archiveSuccessModal" 
+                class="btn btn-outline-secondary btn-sm ms-auto">
                 Archive
-            </button>
+                </a>
 
         </div>
     </div>
