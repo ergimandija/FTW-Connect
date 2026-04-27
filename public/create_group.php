@@ -10,12 +10,6 @@
 <div class="container-fluid h-100">
     <div class="row h-100">
 
-        <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center left-side">
-            <div class="logo-box">
-                <img src="assets/Logo.png" alt="FTW Connect Logo" class="img-fluid logo-img">
-            </div>
-        </div>
-
         <div class="col-md-6 d-flex align-items-center justify-content-center">
             <div style="width: 100%; max-width: 420px; padding: 20px;">
 

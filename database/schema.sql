@@ -77,6 +77,7 @@ CREATE TABLE Chat_User (
     user_id INT,
     role VARCHAR(50),
     type VARCHAR(50),
+    archived TINYINT DEFAULT 0,
 
     PRIMARY KEY (chat_id, user_id),
 
@@ -87,6 +88,32 @@ CREATE TABLE Chat_User (
 
     CONSTRAINT fkcuus
     FOREIGN KEY (user_id)
+    REFERENCES Users(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE Invitation (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chat_id INT NOT NULL,
+    invited_by INT NOT NULL,
+    invited_user INT NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_invite (chat_id, invited_user),
+
+    CONSTRAINT fkinchat
+    FOREIGN KEY (chat_id)
+    REFERENCES Chat(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fkinvby
+    FOREIGN KEY (invited_by)
+    REFERENCES Users(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fkinvuser
+    FOREIGN KEY (invited_user)
     REFERENCES Users(id)
     ON DELETE CASCADE
 );

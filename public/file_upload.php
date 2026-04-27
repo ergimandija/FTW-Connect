@@ -44,7 +44,7 @@
                     ?>
                 </div>
 
-                <form method="POST" action="upload_file.php?cid=<?= (int)$chatId ?>" enctype="multipart/form-data">
+                <form method="POST" action="file_upload.php?cid=<?= (int)$chatId ?>" enctype="multipart/form-data">
 
                     <input type="hidden" name="cid" value="<?= (int)$chatId ?>">
 

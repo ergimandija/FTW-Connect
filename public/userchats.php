@@ -28,6 +28,7 @@ include '../src/includes/header.php';
         <div class="d-flex" role="search">
                 <input class="form-control me-2" type="search" placeholder="Search" id="search-input" aria-label="Search"/>
                 <button class="btn btn-outline-success" id="search-btn">Search</button>
+                <a href="invitations.php" class="btn btn-outline-primary ms-2">Invitations</a>
         </div>
 </div>
 <div id="userList-container" class="container mt-3">
