@@ -26,7 +26,7 @@ function showContainer(containerId) {
 }
 
 function archiveChat(chatId){
-        const resp = fetch("../src/api/archiveChats.php?cid_arc="+chatId)
+        const resp = fetch("../src/api/archiveChats.php?cid_arc="+chatId+"&status=1")
                 .then(res => res.json())
                 .then(data => { 
                     if(data.status == "error" ){
@@ -40,6 +40,16 @@ function archiveChat(chatId){
         
 }
 
+function unArchiveChat(chatId){
+        const resp = fetch("../src/api/archiveChats.php?cid_arc="+chatId+"&status=0")
+                .then(res => res.json())
+                .then(data =>console.log(data))
+                .then(()=> {
+                        window.location.reload();
+                });
+        
+}
+
 function loadChats() {
     console.log()
     fetch("../src/api/getChats.php")
@@ -47,9 +57,11 @@ function loadChats() {
         .then(data => {
             const container = document.getElementById("userList-container");
             const archive = document.getElementById("archive-container");
-
+           
             data.forEach(chat => {
-                
+                 let onClick = (chat.archived == 1)?`unArchiveChat(${chat.id})`:`archiveChat(${chat.id})`;
+                 let buttonText =  (chat.archived == 1)?"remove from archive":"Archive";
+
 
                 const card = document.createElement("div");
                 card.className = "card mb-2 shadow-sm";
@@ -72,8 +84,8 @@ function loadChats() {
                         </div>
 
                         <button class="btn btn-outline-secondary btn-sm ms-auto"
-                                onclick="archiveChat(${chat.id})">
-                            Archive
+                                onclick="${onClick}">
+                            ${buttonText}
                         </button>
                     </div>
                 `;
