@@ -17,8 +17,14 @@ function getRecipientName($con, $id){
         return $row['name'];
 }
 ?>
-
-<div>    
+<script src="assets/js/userchats.js" defer></script>
+<div class="p-2">
+        <div class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" id="search-input" aria-label="Search"/>
+                <button class="btn btn-outline-success" id="search-btn">Search</button>
+        </div>
+</div>
+<div id="userList-container">    
 <?php
 foreach($idList as $chatId){
      $stmt = $con->prepare("SELECT * from chat where id=:id");
@@ -30,7 +36,7 @@ foreach($idList as $chatId){
      $description = (!empty($chatData["description"]))?$chatData["description"]: "";
 
 ?>
-    <div style="border: solid; display:flex;">
+    <div style="border: solid;" class="d-flex">
         <img src=<?=$chatPicturePath ?> width="30px" height="30px">
         <a href=<?="./chat.php?cid=".$chatId["chat_id"]?>> <?=$chatName ?> </a>
         <p><?=$description ?><p>
