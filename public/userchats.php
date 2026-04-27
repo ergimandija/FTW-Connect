@@ -18,35 +18,50 @@ function getRecipientName($con, $id){
 }
 ?>
 <script src="assets/js/userchats.js" defer></script>
-<div class="p-2">
+<div class="p-3 m-3">
         <div class="d-flex" role="search">
                 <input class="form-control me-2" type="search" placeholder="Search" id="search-input" aria-label="Search"/>
                 <button class="btn btn-outline-success" id="search-btn">Search</button>
         </div>
 </div>
-<div id="userList-container">    
+<div id="userList-container" class="container mt-3">
 <?php
 foreach($idList as $chatId){
      $stmt = $con->prepare("SELECT * from chat where id=:id");
      $stmt->bindParam(":id", $chatId["chat_id"]);
      $stmt->execute();
      $chatData = $stmt->fetch(PDO::FETCH_ASSOC);
-     $chatName = (!empty($chatData["name"]))?$chatData["name"]: getRecipientName($con, $chatData["id"]);
-     $chatPicturePath = (!empty($chatData["picture"]))?$chatData["picture"]: "./assets/img/anonymous.png";
-     $description = (!empty($chatData["description"]))?$chatData["description"]: "";
 
+     $chatName = (!empty($chatData["name"])) ? $chatData["name"] : getRecipientName($con, $chatData["id"]);
+     $chatPicturePath = (!empty($chatData["picture"])) ? $chatData["picture"] : "./assets/img/anonymous.png";
+     $description = (!empty($chatData["description"])) ? $chatData["description"] : "";
 ?>
-    <div style="border: solid;" class="d-flex">
-        <img src=<?=$chatPicturePath ?> width="30px" height="30px">
-        <a href=<?="./chat.php?cid=".$chatId["chat_id"]?>> <?=$chatName ?> </a>
-        <p><?=$description ?><p>
-</div>
-<?php     
- }
-?>
-</div>
+    <div class="card mb-2 shadow-sm">
+        <div class="card-body d-flex align-items-center">
 
-<p>
+            <img src="<?= $chatPicturePath ?>" 
+                 class="rounded-circle me-3" 
+                 width="50" height="50" 
+                 style="object-fit: cover;">
+
+            <div class="flex-grow-1">
+                <a href="<?= "./chat.php?cid=".$chatId["chat_id"] ?>" 
+                   class="fw-bold text-decoration-none text-dark">
+                   <?= $chatName ?>
+                </a>
+                <p class="mb-0 text-muted small">
+                    <?= $description ?>
+                </p>
+            </div>
+             <button class="btn btn-outline-secondary btn-sm ms-auto archive-btn"
+                    data-chat-id="<?= $chatId["chat_id"] ?>">
+                Archive
+            </button>
+
+        </div>
+    </div>
+<?php } ?>
+</div>
     
 </body>
 </html>
