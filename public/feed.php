@@ -62,15 +62,22 @@
         $commentContent = trim($_POST["comment_content"]);
         $postId = $_POST["post_id"];
         $userId = $_SESSION["uid"];
+        $parentCommentId = null;
+
+        if (!empty($_POST["parent_comment_id"]))
+        {
+        $parentCommentId = $_POST["parent_comment_id"];
+        }
 
         if ($commentContent !== "")
         {
-            $sql = "INSERT INTO comment (content, user_id, post_id)
-                    VALUES (:content, :user_id, :post_id)";
+            $sql = "INSERT INTO comment (content, user_id, post_id, parent_comment_id)
+                VALUES (:content, :user_id, :post_id, :parent_comment_id)";
             $stmt = $con->prepare($sql);
             $stmt->bindParam(":content", $commentContent);
             $stmt->bindParam(":user_id", $userId);
             $stmt->bindParam(":post_id", $postId);
+            $stmt->bindParam(":parent_comment_id", $parentCommentId);
             $stmt->execute();
 
             header("Location: feed.php");
@@ -178,10 +185,11 @@
 
                                 <?php
                                     $commentsStmt = $con->prepare("
-                                        SELECT comment.content, comment.created_at, users.name
+                                        SELECT comment.id, comment.content, comment.created_at, users.name
                                         FROM comment
                                         LEFT JOIN users ON comment.user_id = users.id
                                         WHERE comment.post_id = :post_id
+                                        AND comment.parent_comment_id IS NULL
                                         ORDER BY comment.created_at ASC
                                     ");
                                     $commentsStmt->bindParam(":post_id", $post["id"]);
@@ -197,6 +205,57 @@
                                             <strong><?php echo htmlspecialchars($comment["name"] ?? "Unknown User"); ?></strong>
                                             <p class="mb-1"><?php echo nl2br(htmlspecialchars($comment["content"])); ?></p>
                                             <small class="text-muted"><?php echo htmlspecialchars($comment["created_at"]); ?></small>
+
+                                            <?php
+                                                $repliesStmt = $con->prepare("
+                                                    SELECT comment.content, comment.created_at, users.name
+                                                    FROM comment
+                                                    LEFT JOIN users ON comment.user_id = users.id
+                                                    WHERE comment.parent_comment_id = :parent_comment_id
+                                                    ORDER BY comment.created_at ASC
+                                                ");
+                                                $repliesStmt->bindParam(":parent_comment_id", $comment["id"]);
+                                                $repliesStmt->execute();
+                                                $replies = $repliesStmt->fetchAll(PDO::FETCH_ASSOC);
+                                            ?>
+
+                                            <?php
+                                                foreach ($replies as $reply)
+                                                {
+                                            ?>
+                                                    <div class="mt-2 ms-4 p-2 bg-white border rounded">
+                                                        <strong><?php echo htmlspecialchars($reply["name"] ?? "Unknown User"); ?></strong>
+                                                        <p class="mb-1"><?php echo nl2br(htmlspecialchars($reply["content"])); ?></p>
+                                                        <small class="text-muted"><?php echo htmlspecialchars($reply["created_at"]); ?></small>
+                                                    </div>
+                                            <?php
+                                                }
+                                            ?>
+
+                                            <?php
+                                                if ($isLoggedIn)
+                                                {
+                                            ?>
+                                                    <form action="" method="post" class="mt-2 ms-4">
+                                                        <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post["id"]); ?>">
+                                                        <input type="hidden" name="parent_comment_id" value="<?php echo htmlspecialchars($comment["id"]); ?>">
+
+                                                        <div class="input-group input-group-sm">
+                                                            <input 
+                                                                type="text" 
+                                                                name="comment_content" 
+                                                                class="form-control" 
+                                                                placeholder="Reply to this comment..."
+                                                                required
+                                                            >
+                                                            <button type="submit" name="create_comment" class="btn btn-outline-secondary">
+                                                                Reply
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                            <?php
+                                                }
+                                            ?>
                                         </div>
                                 <?php
                                     }
