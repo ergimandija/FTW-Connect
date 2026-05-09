@@ -23,6 +23,7 @@ include '../src/includes/header.php';
 
 <script src="assets/js/userchats.js" defer></script>
 
+
 <div class="conversation-page d-flex">
 
     <aside class="conversation-sidebar p-3">
@@ -40,7 +41,6 @@ include '../src/includes/header.php';
                     Search
                 </button>
             </div>
->>>>>>> development
         </div>
 
         <div id="userList-container" class="chat-list mb-3">
