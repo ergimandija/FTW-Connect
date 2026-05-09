@@ -3,7 +3,7 @@
 
 <?php include '../src/includes/header.php';?>
 <?php require_once __DIR__ . '/../src/auth/create_group.php'; ?>
-
+<link rel="stylesheet" href="./assets/styles/create_group.css">
 
 
 <body>
@@ -14,7 +14,7 @@
             <div style="width: 100%; max-width: 420px; padding: 20px;">
 
                 <div class="text-center d-md-none mb-4">
-                    <img src="assets/Logo.png" alt="Logo" class="img-fluid mb-3" style="max-width: 300px;">
+                    <img src="assets/img/logo.png" alt="Logo" class="img-fluid mb-3" style="max-width: 300px;">
                 </div>
 
                 <h3 class="mb-2">Create a group</h3>
