@@ -22,13 +22,6 @@ include '../src/includes/header.php';
 </div>
 
 <script src="assets/js/userchats.js" defer></script>
-<<<<<<< HEAD
-<div class="p-3 m-3">
-        <div class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" id="search-input" aria-label="Search"/>
-                <button class="btn btn-outline-success" id="search-btn">Search</button>
-                <a href="invitations.php" class="btn btn-outline-primary ms-2">Invitations</a>
-=======
 
 <div class="conversation-page d-flex">
 
