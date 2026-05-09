@@ -1,0 +1,27 @@
+/* Conversations Page */
+.conversation-page {
+    min-height: calc(100vh - 80px);
+}
+
+/* Sidebar */
+.conversation-sidebar {
+    width: 360px;
+    min-height: calc(100vh - 80px);
+    background-color: #1163950D;
+    border-right: 1px solid #0000000D;
+}
+
+/* Chat List */
+.chat-list {
+    overflow-y: auto;
+}
+
+/* Main Content */
+.conversation-main {
+    min-height: calc(100vh - 80px);
+}
+
+/* Empty State */
+.empty-state {
+    opacity: 0.7;
+}
