@@ -1,7 +1,7 @@
 <?php 
 header('Content-Type: application/json');
 include '../../config/config.php';
-
+include '../includes/crypto.php';
 
 try{ 
 $data = json_decode(file_get_contents("php://input"), true);
@@ -24,10 +24,13 @@ $stmt->bindParam(":uid",$_SESSION['uid']);
 $stmt->execute();
 $check = $stmt->fetch(PDO::FETCH_ASSOC);
 if(!empty($check['chat_id'])){
-$stmt = $con->prepare('INSERT INTO MESSAGE(chat_id,sender_id,content) VALUES(:chatId,:id,:message)');
+$stmt = $con->prepare('INSERT INTO message(chat_id,sender_id,content) VALUES(:chatId,:id,:message)');
 $stmt->bindParam(":chatId", $data['cid']);
 $stmt->bindParam(":id", $_SESSION['uid']);
-$stmt->bindParam(":message", $data['message']);
+$message = $data['message'];
+
+$encryptedMessage = Crypto::encrypt($message);
+$stmt->bindParam(":message", $encryptedMessage);
 $stmt->execute();
 echo  json_encode([
         "status" => "OK",
