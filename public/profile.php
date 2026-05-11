@@ -2,10 +2,7 @@
 include '../src/includes/header.php'; 
 session_start();
 
-if (!isset($_SESSION['uid'])) {
-    header("Location: login.php");
-    exit;
-}
+include '../src/auth/auth_check.php';
 
 $loggedInUserId = $_SESSION['uid'];
 

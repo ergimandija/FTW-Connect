@@ -2,7 +2,8 @@
 <html lang="en">
 <?php 
     include '../src/includes/header.php';
-    ?> 
+    include '../src/auth/auth_check.php';
+?> 
    <script src="assets/js/chat.js" defer></script>
 <body>
     <h1>Chat </h1>
