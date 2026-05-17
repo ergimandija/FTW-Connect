@@ -3,6 +3,7 @@ const container = document.getElementById("messageContainer");
 let firstTime = true;
 let allLoaded = false; 
 
+
 container.addEventListener("scroll", () => {
     if (container.scrollTop <= 10 && !allLoaded) {
         isLoading = true;
@@ -39,36 +40,50 @@ document.getElementById("chatForm").addEventListener("submit", (e) => {
 
 
 function loadMessages(){
-        fetch("../src/api/getMessage.php?cid="+ document.getElementById("chatId").value + "&loadCount="+ document.getElementById("loadCount").value)
-        .then(res=>res.json())
-        .then(
-            (data) => {
-                container.replaceChildren();
-                data['messages'].forEach(element => {
-                        const message = document.createElement("div");
-                        const content = document.createElement("p");
-                        const time = document.createElement("p");
-                        content.textContent = element.content;
-                        time.textContent = element.sent_at;
-                        if(element.sender_id ==  document.getElementById("uid_reference").value){
-                            message.style.display = "flex";
-                            message.style.justifyContent = "flex-end";
-                        }
-                        message.appendChild(content);
-                        message.appendChild(time);
-                        container.appendChild(message);
-                });
-                if(firstTime){
-                    container.scrollTop = container.scrollHeight;
-                    firstTime = false;
-                }
-                 if (data.limit >= data.total) {
-                    allLoaded = true;
-                    console.log("All messages loaded");
-                }
+    fetch("../src/api/getMessage.php?cid=" 
+        + document.getElementById("chatId").value 
+        + "&loadCount=" + document.getElementById("loadCount").value)
+    .then(res => res.json())
+    .then((data) => {
 
-            }
-        )
+        container.replaceChildren();
+
+        data['messages'].forEach(element => {
+
+            const isMine = element.sender_id == document.getElementById("uid_reference").value;
+
+            // row
+            const row = document.createElement("div");
+            row.classList.add("msg-row", isMine ? "right" : "left");
+
+            // bubble
+            const bubble = document.createElement("div");
+            bubble.classList.add("msg-bubble", isMine ? "sent" : "received");
+
+            // message text
+            const content = document.createElement("div");
+            content.textContent = element.content;
+
+            // time
+            const time = document.createElement("div");
+            time.classList.add("msg-time");
+            time.textContent = element.sent_at;
+
+            bubble.appendChild(content);
+            bubble.appendChild(time);
+            row.appendChild(bubble);
+            container.appendChild(row);
+        });
+
+        if(firstTime){
+            container.scrollTop = container.scrollHeight;
+            firstTime = false;
+        }
+
+        if (data.limit >= data.total) {
+            allLoaded = true;
+        }
+    });
 }
 
 setInterval(loadMessages,2000);
