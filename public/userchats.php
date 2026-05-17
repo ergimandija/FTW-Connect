@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php 
+include '../src/auth/auth_check.php';
 include '../src/includes/header.php';
 ?>
 

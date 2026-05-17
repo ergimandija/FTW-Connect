@@ -11,6 +11,8 @@
       <a href="./login.php" class="nav-item">Login</a>
       <a href="./feed.php" class="nav-item">Feed</a>
       <a href="./userchats.php" class="nav-item">Messages</a>
+      <a href="./profile.php" class="nav-item">Profile</a>
+      <a href="./logout.php" class="nav-item">Logout</a>
     </nav>
 
     <!-- ICONS -->

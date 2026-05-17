@@ -1,6 +1,4 @@
 <?php
-
-
 $errors = [];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -30,11 +28,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $_SESSION["uid"] = $uid;
                     $_SESSION["name"] = $user["name"];
                     $_SESSION["email"] = $user["email"];
+                    $destination = $_SESSION['redirect_to'];
+                    unset($_SESSION['redirect_to']);
+                    
 
                     $updateStmt = $con->prepare("UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?");
                     $updateStmt->execute([$uid]);
-
-                    header("Location: index.php");
+                    if (empty($destination)) {
+                        $destination = "index.php";
+                    }
+                    header("Location: " . $destination);
                     exit();
                 } 
                 else {

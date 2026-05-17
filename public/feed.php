@@ -2,6 +2,8 @@
 <html lang="en">
 
 <?php
+    include '../src/auth/auth_check.php';
+
     require_once '../src/includes/header.php';
 
     $isLoggedIn = isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true && isset($_SESSION["uid"]);

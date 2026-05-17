@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
+
 <script src="assets/js/chat.js" defer></script>
 
 <body class="bg-light">
