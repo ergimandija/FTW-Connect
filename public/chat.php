@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<?php
+    include '../src/auth/auth_check.php';
 
+?>
 <script src="assets/js/chat.js" defer></script>
 
 <body class="bg-light">

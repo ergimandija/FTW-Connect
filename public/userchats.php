@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php 
-include '../src/auth/auth_check.php';
 include '../src/includes/header.php';
+include '../src/auth/auth_check.php';
 ?>
 
 <div class="modal fade" id="archiveSuccessModal" tabindex="-1" aria-labelledby="successModalLabel">
