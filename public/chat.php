@@ -9,15 +9,15 @@
 <div class="container py-3">
 
     <!-- Header -->
-    <div class="card shadow-sm mb-3">
-        <div class="card-body py-2">
+    <div class="chat-panel shadow-sm mb-3">
+        <div class="chat-panel-body py-2 px-3">
             <h5 class="mb-0">💬 Chat</h5>
         </div>
     </div>
 
     <!-- Chat box -->
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
+    <div class="chat-panel shadow-sm">
+        <div class="chat-panel-body p-0">
 
             <div id="messageContainer" class="chat-box p-3 overflow-auto"></div>
 

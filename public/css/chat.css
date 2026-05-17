@@ -51,3 +51,14 @@
     opacity: 0.7;
     margin-top: 4px;
 }
+
+.chat-panel {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.chat-panel-body {
+    background: #fff;
+}
