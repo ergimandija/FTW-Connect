@@ -1,67 +1,85 @@
-
-<!---- lines To be removed in later updates -->
-<?php
-include '../config/config.php';
-?>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-
-<!-------------------------------------------->
-
-
-<?php
-$stmt = $con->prepare("SELECT distinct chat_id from chat_user where user_id=:id");
-$stmt->bindParam(":id", $_SESSION['id']);
-$stmt->execute();
-$idList = $stmt->fetchAll();
-
-function getRecipientName($con, $id){
-        $stmt = $con->prepare("SELECT u.name from users as u join chat_user as cu on cu.user_id = u.id  where cu.chat_id = :chatId  and cu.user_id != :currentUserId limit 1");
-        $stmt->bindParam(":currentUserId", $_SESSION['id']);
-        $stmt->bindParam(":chatId", $id);
-        $stmt->execute();
-        $row =  $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['name'];;
-        
-}
-?>
-
-
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-
-
-<p>
-<div >    
-<?php
-foreach($idList as $chatId){
-     $stmt = $con->prepare("SELECT * from chat where id=:id");
-     $stmt->bindParam(":id", $chatId["chat_id"]);
-     $stmt->execute();
-     $chatData = $stmt->fetch(PDO::FETCH_ASSOC);
-     $chatName = (!empty($chatData["name"]))?$chatData["name"]: getRecipientName($con, $chatData["id"]);
-     $chatPicturePath = (!empty($chatData["picture"]))?$chatData["picture"]: "./assets/img/anonymous.png";
-     $description = (!empty($chatData["description"]))?$chatData["description"]: "";
-
+<?php 
+include '../src/includes/header.php';
+include '../src/auth/auth_check.php';
 ?>
-    <div style="border: solid; display:flex;">
-        <img src=<?=$chatPicturePath ?> width="30px" height="30px">
-        <a href=<?="./chat.php?cid=".$chatId["chat_id"]?>> <?=$chatName ?> </a>
-        <p><?=$description ?><p>
-</div>
-<?php     
- }
-?>
+
+<div class="modal fade" id="archiveSuccessModal" tabindex="-1" aria-labelledby="successModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Success</h5>
+                <button type="button" class="btn-close btn-close-white" onclick="window.location.reload()"></button>            
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Chat was archived</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="window.location.reload()">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<p>
-    
+<script src="assets/js/userchats.js" defer></script>
+
+<div class="conversation-page d-flex">
+
+    <aside class="conversation-sidebar p-3">
+
+        <div class="sidebar-search mb-3">
+            <div class="d-flex gap-2" role="search">
+                <input 
+                    class="form-control"
+                    type="search"
+                    placeholder="Search"
+                    id="search-input"
+                    aria-label="Search"
+                />
+                <button class="btn btn-outline-success" id="search-btn">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div id="userList-container" class="chat-list mb-3">
+            <button 
+                onclick='showContainer("archive-container")' 
+                class="btn btn-outline-secondary btn-sm">
+                Show Archive
+            </button>
+        </div>
+
+        <div id="archive-container" class="chat-list d-none">
+            <button 
+                onclick='showContainer("userList-container")' 
+                class="btn btn-outline-secondary btn-sm">
+                Show Chats
+            </button>
+        </div>
+
+    </aside>
+
+    <main class="conversation-main flex-grow-1 d-flex justify-content-center align-items-center">
+
+        <?php
+        if (isset($_GET['cid'])) {
+            include 'chat.php';
+        } else {
+        ?>
+        <div class="empty-state text-center text-muted">
+            <h3>Select a conversation</h3>
+            <p class="mb-0">Your messages will appear here.</p>
+            </div>
+        <?php } ?>
+        
+
+    </main>
+
+</div>
+
+<?php include '../src/includes/footer.php'; ?>
+
 </body>
 </html>

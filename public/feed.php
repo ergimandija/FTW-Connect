@@ -1,6 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
 
 <?php
-    require_once "../config/config.php";
+   
+
+    require_once '../src/includes/header.php';
+
+     include '../src/auth/auth_check.php';
 
     $isLoggedIn = isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true && isset($_SESSION["uid"]);
 
@@ -54,27 +60,164 @@
         }
     }
 
+    
+    if ($isLoggedIn && isset($_POST["create_comment"]))
+    {
+        $commentContent = trim($_POST["comment_content"]);
+        $postId = $_POST["post_id"];
+        $userId = $_SESSION["uid"];
+        $parentCommentId = null;
+
+        if (!empty($_POST["parent_comment_id"]))
+        {
+        $parentCommentId = $_POST["parent_comment_id"];
+        }
+
+        if ($commentContent !== "")
+        {
+            $sql = "INSERT INTO comment (content, user_id, post_id, parent_comment_id)
+                VALUES (:content, :user_id, :post_id, :parent_comment_id)";
+            $stmt = $con->prepare($sql);
+            $stmt->bindParam(":content", $commentContent);
+            $stmt->bindParam(":user_id", $userId);
+            $stmt->bindParam(":post_id", $postId);
+            $stmt->bindParam(":parent_comment_id", $parentCommentId);
+            $stmt->execute();
+
+            header("Location: feed.php");
+            exit();
+        }
+    }
+
+    if ($isLoggedIn && isset($_POST["delete_comment"]))
+    {
+        $commentId = $_POST["comment_id"];
+        $userId = $_SESSION["uid"];
+
+        $checkStmt = $con->prepare("
+            SELECT id
+            FROM comment
+            WHERE id = :comment_id
+            AND user_id = :user_id
+        ");
+        $checkStmt->bindParam(":comment_id", $commentId);
+        $checkStmt->bindParam(":user_id", $userId);
+        $checkStmt->execute();
+
+        $commentToDelete = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($commentToDelete)
+        {
+            $deleteRepliesStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE parent_comment_id = :comment_id
+            ");
+            $deleteRepliesStmt->bindParam(":comment_id", $commentId);
+            $deleteRepliesStmt->execute();
+
+            $deleteCommentStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE id = :comment_id
+                AND user_id = :user_id
+            ");
+            $deleteCommentStmt->bindParam(":comment_id", $commentId);
+            $deleteCommentStmt->bindParam(":user_id", $userId);
+            $deleteCommentStmt->execute();
+        }
+
+        header("Location: feed.php");
+        exit();
+    }
+    
+    if ($isLoggedIn && isset($_POST["delete_post"]))
+    {
+        $postId = $_POST["post_id"];
+        $userId = $_SESSION["uid"];
+
+        $checkStmt = $con->prepare("
+            SELECT image_url
+            FROM post
+            WHERE id = :post_id
+            AND user_id = :user_id
+        ");
+        $checkStmt->bindParam(":post_id", $postId);
+        $checkStmt->bindParam(":user_id", $userId);
+        $checkStmt->execute();
+
+        $postToDelete = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($postToDelete)
+        {
+            $deleteRepliesStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE parent_comment_id IN (
+                    SELECT id FROM
+                    (
+                        SELECT id
+                        FROM comment
+                        WHERE post_id = :post_id
+                    ) AS temp
+            )");
+            $deleteRepliesStmt->bindParam(":post_id", $postId);
+            $deleteRepliesStmt->execute();
+
+            $deleteCommentsStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE post_id = :post_id
+            ");
+            $deleteCommentsStmt->bindParam(":post_id", $postId);
+            $deleteCommentsStmt->execute();
+
+            $deletePostStmt = $con->prepare("
+                DELETE FROM post
+                WHERE id = :post_id
+                AND user_id = :user_id
+            ");
+            $deletePostStmt->bindParam(":post_id", $postId);
+            $deletePostStmt->bindParam(":user_id", $userId);
+            $deletePostStmt->execute();
+
+            if (!empty($postToDelete["image_url"]))
+            {
+                $imageFilePath = __DIR__ . "/" . $postToDelete["image_url"];
+
+                if (file_exists($imageFilePath))
+                {
+                    unlink($imageFilePath);
+                }
+            }
+        }
+
+        header("Location: feed.php");
+        exit();
+    }
+
+
+
+
     $postsStmt = $con->prepare("
-        SELECT post.content, post.image_url, post.created_at, users.name
+        SELECT 
+            post.id,
+            post.user_id,
+            post.content,
+            post.image_url,
+            post.created_at,
+            users.name,
+            COUNT(comment.id) AS comment_count
         FROM post
         LEFT JOIN users ON post.user_id = users.id
+        LEFT JOIN comment ON comment.post_id = post.id
+        GROUP BY post.id, post.user_id, post.content, post.image_url, post.created_at, users.name
         ORDER BY post.created_at DESC
     ");
     $postsStmt->execute();
     $posts = $postsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <title>FTW-Connect</title>
-</head>
 <body>
+    
      <div class="container my-4">
         <div class="row">
             <div class="col-lg-3 mb-4">
@@ -139,8 +282,167 @@
 
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-outline-primary btn-sm">Like</button>
-                                    <button class="btn btn-outline-secondary btn-sm">Comment</button>
+                                    <button class="btn btn-outline-secondary btn-sm" type="button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat" viewBox="0 0 16 16">
+                                            <path d="M2.678 11.894a1 1 0 0 1 .287.801 11 11 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8 8 0 0 0 8 14c3.996 0 7-2.807 7-6s-3.004-6-7-6-7 2.808-7 6c0 1.468.617 2.83 1.678 3.894m-.493 3.905a22 22 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a10 10 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7-3.582 7-8 7a9 9 0 0 1-2.347-.306c-.52.263-1.639.742-3.468 1.105"/>
+                                        </svg>
+                                        <?php echo htmlspecialchars($post["comment_count"]); ?>
+                                    </button>
+                                    <?php
+                                        if ($isLoggedIn && $post["user_id"] == $_SESSION["uid"])
+                                        {
+                                    ?>
+                                        <form action="" method="post" onsubmit="return confirm('Do you really want to delete this post?');">
+                                            <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post["id"]); ?>">
+                                            <button type="submit" name="delete_post" class="btn btn-outline-danger btn-sm">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    <?php
+                                        }
+                                    ?>
                                 </div>
+                                
+
+                                <?php
+                                    $commentsStmt = $con->prepare("
+                                        SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name
+                                        FROM comment
+                                        LEFT JOIN users ON comment.user_id = users.id
+                                        WHERE comment.post_id = :post_id
+                                        AND comment.parent_comment_id IS NULL
+                                        ORDER BY comment.created_at ASC
+                                    ");
+                                    $commentsStmt->bindParam(":post_id", $post["id"]);
+                                    $commentsStmt->execute();
+                                    $comments = $commentsStmt->fetchAll(PDO::FETCH_ASSOC);
+                                ?>
+
+                                <?php
+                                    foreach ($comments as $comment)
+                                    {
+                                ?>
+                                        <div class="mt-3 p-2 bg-light rounded">
+                                            <strong><?php echo htmlspecialchars($comment["name"] ?? "Unknown User"); ?></strong>
+                                            <p class="mb-1"><?php echo nl2br(htmlspecialchars($comment["content"])); ?></p>
+                                            <small class="text-muted"><?php echo htmlspecialchars($comment["created_at"]); ?></small>
+
+                                            <?php
+                                                if ($isLoggedIn && $comment["user_id"] == $_SESSION["uid"])
+                                                {
+                                            ?>
+                                                    <form action="" method="post" class="mt-1" onsubmit="return confirm('Do you really want to delete this comment?');">
+                                                        <input type="hidden" name="comment_id" value="<?php echo htmlspecialchars($comment["id"]); ?>">
+                                                            <button type="submit" name="delete_comment" class="btn btn-outline-danger btn-sm">
+                                                                Delete
+                                                            </button>
+                                                    </form>
+                                            <?php
+                                                }
+                                            ?>
+
+                                            <?php
+                                                $repliesStmt = $con->prepare("
+                                                    SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name
+                                                    FROM comment
+                                                    LEFT JOIN users ON comment.user_id = users.id
+                                                    WHERE comment.parent_comment_id = :parent_comment_id
+                                                    ORDER BY comment.created_at ASC
+                                                ");
+                                                $repliesStmt->bindParam(":parent_comment_id", $comment["id"]);
+                                                $repliesStmt->execute();
+                                                $replies = $repliesStmt->fetchAll(PDO::FETCH_ASSOC);
+                                            ?>
+
+                                            <?php
+                                                foreach ($replies as $reply)
+                                                {
+                                            ?>
+                                                    <div class="mt-2 ms-4 p-2 bg-white border rounded">
+                                                        <strong><?php echo htmlspecialchars($reply["name"] ?? "Unknown User"); ?></strong>
+                                                        <p class="mb-1"><?php echo nl2br(htmlspecialchars($reply["content"])); ?></p>
+                                                        <small class="text-muted"><?php echo htmlspecialchars($reply["created_at"]); ?></small>
+
+                                                        <?php
+                                                            if ($isLoggedIn && $reply["user_id"] == $_SESSION["uid"])
+                                                            {
+                                                        ?>
+                                                                <form action="" method="post" class="mt-1" onsubmit="return confirm('Do you really want to delete this reply?');">
+                                                                    <input type="hidden" name="comment_id" value="<?php echo htmlspecialchars($reply["id"]); ?>">
+                                                                    <button type="submit" name="delete_comment" class="btn btn-outline-danger btn-sm">
+                                                                        Delete
+                                                                    </button>
+                                                                </form>
+                                                        <?php
+                                                            }
+                                                        ?>
+
+                                                    </div>
+                                            <?php
+                                                }
+                                            ?>
+
+                                            <?php
+                                                if ($isLoggedIn)
+                                                {
+                                            ?>
+                                                    <form action="" method="post" class="mt-2 ms-4">
+                                                        <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post["id"]); ?>">
+                                                        <input type="hidden" name="parent_comment_id" value="<?php echo htmlspecialchars($comment["id"]); ?>">
+
+                                                        <div class="input-group input-group-sm">
+                                                            <input 
+                                                                type="text" 
+                                                                name="comment_content" 
+                                                                class="form-control" 
+                                                                placeholder="Reply to this comment..."
+                                                                required
+                                                            >
+                                                            <button type="submit" name="create_comment" class="btn btn-outline-secondary">
+                                                                Reply
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                            <?php
+                                                }
+                                            ?>
+                                        </div>
+                                <?php
+                                    }
+                                ?>
+
+
+
+                                <?php
+                                    if ($isLoggedIn)
+                                    {
+                                ?>
+                                        <form action="" method="post" class="mt-3">
+                                            <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post["id"]); ?>">
+                                            <div class="input-group">
+                                                <input 
+                                                    type="text" 
+                                                    name="comment_content" 
+                                                    class="form-control" 
+                                                    placeholder="Write a comment..."
+                                                    required
+                                                >
+                                                <button type="submit" name="create_comment" class="btn btn-outline-secondary">
+                                                    Send
+                                                </button>
+                                            </div>
+                                        </form>
+                                <?php
+                                    }
+                                    else
+                                    {
+                                ?>
+                                    <p class="text-muted small mt-3">
+                                        Log in to comment.
+                                    </p>
+                                <?php
+                                    }
+                                ?>
                             </div>
                         </div>
                 <?php

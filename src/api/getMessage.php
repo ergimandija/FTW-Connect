@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
 include '../../config/config.php';
+include '../includes/crypto.php';
 
 
 if(isset($_GET['cid'])){
@@ -8,7 +9,7 @@ if(isset($_GET['cid'])){
     $limit = 25;
     $stmt = $con->prepare('SELECT * FROM chat_user where chat_id = :chid AND user_id = :uid');
     $stmt->bindParam(":chid" , $_GET['cid']);
-    $stmt->bindParam(":uid",$_SESSION['id']);
+    $stmt->bindParam(":uid",$_SESSION['uid']);
     $stmt->execute();
     $check = $stmt->fetch(PDO::FETCH_ASSOC);
     if(!empty($check['chat_id'])){
@@ -25,6 +26,10 @@ if(isset($_GET['cid'])){
 
         $stmt->execute();
         $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($messages as &$msg) {
+            $msg['content'] = Crypto::decrypt($msg['content']);
+        }
+
         echo json_encode([
             "messages" => $messages,
             "total" => $count,
