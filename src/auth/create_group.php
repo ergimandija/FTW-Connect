@@ -5,6 +5,11 @@ $errors = [];
 $success = "";
 $createdChatId = null;
 
+if (empty($_SESSION['uid'])) {
+    header('Location: login.php');
+    exit;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $groupName        = trim($_POST["name"] ?? "");
