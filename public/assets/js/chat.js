@@ -100,7 +100,14 @@ function loadMessages(){
         };
 
         deleteBtn.onclick = () => {
-            console.log("Delete message:", element);
+            console.log(element);
+            fetch("../src/api/deleteMessage.php?id="+element.message_id).then(response => console.log(response));
+            console.log(response);
+
+        //     .then(()=>{
+        //                     location.reload();
+
+        //     });
         };
 
 
