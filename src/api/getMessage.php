@@ -21,7 +21,7 @@ if(isset($_GET['cid'])){
     $loadCount = $_GET['loadCount'];
     $limit = min((int)($loadCount * 50), (int)$count);
     $offset = max(0, $count - $limit);
-    $stmt = $con->prepare("SELECT * FROM message WHERE chat_id = :chid order by sent_at asc limit ".$limit." offset ".$offset);
+    $stmt = $con->prepare("SELECT * FROM message m join users u on u.id=m.sender_id WHERE chat_id = :chid order by sent_at asc limit ".$limit." offset ".$offset);
         $stmt->bindParam(":chid" , $_GET['cid']);
 
         $stmt->execute();

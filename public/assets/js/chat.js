@@ -43,37 +43,82 @@ function loadMessages(){
     fetch("../src/api/getMessage.php?cid=" 
         + document.getElementById("chatId").value 
         + "&loadCount=" + document.getElementById("loadCount").value)
-    .then(res => res.json())
-    .then((data) => {
+        .then(res => res.json())
+        .then((data) => {
 
-        container.replaceChildren();
+            container.replaceChildren();
 
         data['messages'].forEach(element => {
 
-            const isMine = element.sender_id == document.getElementById("uid_reference").value;
+        const isMine = element.sender_id == document.getElementById("uid_reference").value;
 
-            // row
-            const row = document.createElement("div");
-            row.classList.add("msg-row", isMine ? "right" : "left");
+        // row
+        const row = document.createElement("div");
+        row.classList.add("msg-row", isMine ? "right" : "left");
 
-            // bubble
-            const bubble = document.createElement("div");
-            bubble.classList.add("msg-bubble", isMine ? "sent" : "received");
+        // avatar container
+        const avatar = document.createElement("img");
+        avatar.classList.add("msg-avatar");
 
-            // message text
-            const content = document.createElement("div");
-            content.textContent = element.content;
+        avatar.src = element.profilePicturePath
+            ? element.profilePicturePath
+            : "./assets/img/anonymous.png";
 
-            // time
-            const time = document.createElement("div");
-            time.classList.add("msg-time");
-            time.textContent = element.sent_at;
+        avatar.onerror = () => {
+            avatar.src = "./assets/img/anonymous.png";
+        };
 
-            bubble.appendChild(content);
-            bubble.appendChild(time);
+        // bubble
+        const bubble = document.createElement("div");
+        bubble.classList.add("msg-bubble", isMine ? "sent" : "received");
+
+        // message text
+        const content = document.createElement("div");
+        content.textContent = element.content;
+
+        // time
+        const time = document.createElement("div");
+        time.classList.add("msg-time");
+        time.textContent = element.sent_at;
+
+        bubble.appendChild(content);
+        bubble.appendChild(time);
+        const editBtn = document.createElement("button");
+        editBtn.classList.add("msg-edit");
+        editBtn.textContent = "Edit";
+        // Delete/edit button
+        const actions = document.createElement("div");
+        actions.classList.add("msg-actions");
+        // Delete button
+        const deleteBtn = document.createElement("button");
+        deleteBtn.classList.add("msg-delete");
+        deleteBtn.textContent = "Delete";
+
+        // (optional hooks)
+        editBtn.onclick = () => {
+            console.log("Edit message:", element);
+        };
+
+        deleteBtn.onclick = () => {
+            console.log("Delete message:", element);
+        };
+
+
+        // order depends on left/right alignment
+        if (isMine) {
             row.appendChild(bubble);
-            container.appendChild(row);
-        });
+            row.appendChild(avatar);
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            bubble.appendChild(actions);
+        } else {
+            row.appendChild(avatar);
+            row.appendChild(bubble);
+        }
+        
+
+        container.appendChild(row);
+    });
 
         if(firstTime){
             container.scrollTop = container.scrollHeight;
