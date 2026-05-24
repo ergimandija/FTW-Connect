@@ -94,9 +94,43 @@ function loadMessages(){
         deleteBtn.classList.add("msg-delete");
         deleteBtn.textContent = "Delete";
 
-        // (optional hooks)
+                // (optional hooks)
         editBtn.onclick = () => {
-            console.log("Edit message:", element);
+
+            const newMessage = prompt("Edit your message:", element.content);
+
+            if (newMessage === null) {
+                return;
+            }
+
+            if (newMessage.trim().length === 0) {
+                alert("Message cannot be empty");
+                return;
+            }
+
+            fetch("../src/api/updateMessage.php", {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json"
+                },
+                body: JSON.stringify({
+                    message_id: element.message_id,
+                    message: newMessage
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                console.log(data);
+
+                if (data.status === "OK") {
+                    loadMessages();
+                } else {
+                    alert(data.message);
+                }
+
+            })
+            .catch(err => console.log(err));
         };
 
         deleteBtn.onclick = () => {
