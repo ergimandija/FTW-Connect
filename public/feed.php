@@ -2,7 +2,11 @@
 <html lang="en">
 
 <?php
+   
+
     require_once '../src/includes/header.php';
+
+     include '../src/auth/auth_check.php';
 
     $isLoggedIn = isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true && isset($_SESSION["uid"]);
 
@@ -85,10 +89,116 @@
         }
     }
 
+    if ($isLoggedIn && isset($_POST["delete_comment"]))
+    {
+        $commentId = $_POST["comment_id"];
+        $userId = $_SESSION["uid"];
+
+        $checkStmt = $con->prepare("
+            SELECT id
+            FROM comment
+            WHERE id = :comment_id
+            AND user_id = :user_id
+        ");
+        $checkStmt->bindParam(":comment_id", $commentId);
+        $checkStmt->bindParam(":user_id", $userId);
+        $checkStmt->execute();
+
+        $commentToDelete = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($commentToDelete)
+        {
+            $deleteRepliesStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE parent_comment_id = :comment_id
+            ");
+            $deleteRepliesStmt->bindParam(":comment_id", $commentId);
+            $deleteRepliesStmt->execute();
+
+            $deleteCommentStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE id = :comment_id
+                AND user_id = :user_id
+            ");
+            $deleteCommentStmt->bindParam(":comment_id", $commentId);
+            $deleteCommentStmt->bindParam(":user_id", $userId);
+            $deleteCommentStmt->execute();
+        }
+
+        header("Location: feed.php");
+        exit();
+    }
+    
+    if ($isLoggedIn && isset($_POST["delete_post"]))
+    {
+        $postId = $_POST["post_id"];
+        $userId = $_SESSION["uid"];
+
+        $checkStmt = $con->prepare("
+            SELECT image_url
+            FROM post
+            WHERE id = :post_id
+            AND user_id = :user_id
+        ");
+        $checkStmt->bindParam(":post_id", $postId);
+        $checkStmt->bindParam(":user_id", $userId);
+        $checkStmt->execute();
+
+        $postToDelete = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($postToDelete)
+        {
+            $deleteRepliesStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE parent_comment_id IN (
+                    SELECT id FROM
+                    (
+                        SELECT id
+                        FROM comment
+                        WHERE post_id = :post_id
+                    ) AS temp
+            )");
+            $deleteRepliesStmt->bindParam(":post_id", $postId);
+            $deleteRepliesStmt->execute();
+
+            $deleteCommentsStmt = $con->prepare("
+                DELETE FROM comment
+                WHERE post_id = :post_id
+            ");
+            $deleteCommentsStmt->bindParam(":post_id", $postId);
+            $deleteCommentsStmt->execute();
+
+            $deletePostStmt = $con->prepare("
+                DELETE FROM post
+                WHERE id = :post_id
+                AND user_id = :user_id
+            ");
+            $deletePostStmt->bindParam(":post_id", $postId);
+            $deletePostStmt->bindParam(":user_id", $userId);
+            $deletePostStmt->execute();
+
+            if (!empty($postToDelete["image_url"]))
+            {
+                $imageFilePath = __DIR__ . "/" . $postToDelete["image_url"];
+
+                if (file_exists($imageFilePath))
+                {
+                    unlink($imageFilePath);
+                }
+            }
+        }
+
+        header("Location: feed.php");
+        exit();
+    }
+
+
+
 
     $postsStmt = $con->prepare("
         SELECT 
             post.id,
+            post.user_id,
             post.content,
             post.image_url,
             post.created_at,
@@ -97,7 +207,7 @@
         FROM post
         LEFT JOIN users ON post.user_id = users.id
         LEFT JOIN comment ON comment.post_id = post.id
-        GROUP BY post.id, post.content, post.image_url, post.created_at, users.name
+        GROUP BY post.id, post.user_id, post.content, post.image_url, post.created_at, users.name
         ORDER BY post.created_at DESC
     ");
     $postsStmt->execute();
@@ -178,12 +288,25 @@
                                         </svg>
                                         <?php echo htmlspecialchars($post["comment_count"]); ?>
                                     </button>
+                                    <?php
+                                        if ($isLoggedIn && $post["user_id"] == $_SESSION["uid"])
+                                        {
+                                    ?>
+                                        <form action="" method="post" onsubmit="return confirm('Do you really want to delete this post?');">
+                                            <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post["id"]); ?>">
+                                            <button type="submit" name="delete_post" class="btn btn-outline-danger btn-sm">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    <?php
+                                        }
+                                    ?>
                                 </div>
                                 
 
                                 <?php
                                     $commentsStmt = $con->prepare("
-                                        SELECT comment.id, comment.content, comment.created_at, users.name
+                                        SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name
                                         FROM comment
                                         LEFT JOIN users ON comment.user_id = users.id
                                         WHERE comment.post_id = :post_id
@@ -205,8 +328,22 @@
                                             <small class="text-muted"><?php echo htmlspecialchars($comment["created_at"]); ?></small>
 
                                             <?php
+                                                if ($isLoggedIn && $comment["user_id"] == $_SESSION["uid"])
+                                                {
+                                            ?>
+                                                    <form action="" method="post" class="mt-1" onsubmit="return confirm('Do you really want to delete this comment?');">
+                                                        <input type="hidden" name="comment_id" value="<?php echo htmlspecialchars($comment["id"]); ?>">
+                                                            <button type="submit" name="delete_comment" class="btn btn-outline-danger btn-sm">
+                                                                Delete
+                                                            </button>
+                                                    </form>
+                                            <?php
+                                                }
+                                            ?>
+
+                                            <?php
                                                 $repliesStmt = $con->prepare("
-                                                    SELECT comment.content, comment.created_at, users.name
+                                                    SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name
                                                     FROM comment
                                                     LEFT JOIN users ON comment.user_id = users.id
                                                     WHERE comment.parent_comment_id = :parent_comment_id
@@ -225,6 +362,21 @@
                                                         <strong><?php echo htmlspecialchars($reply["name"] ?? "Unknown User"); ?></strong>
                                                         <p class="mb-1"><?php echo nl2br(htmlspecialchars($reply["content"])); ?></p>
                                                         <small class="text-muted"><?php echo htmlspecialchars($reply["created_at"]); ?></small>
+
+                                                        <?php
+                                                            if ($isLoggedIn && $reply["user_id"] == $_SESSION["uid"])
+                                                            {
+                                                        ?>
+                                                                <form action="" method="post" class="mt-1" onsubmit="return confirm('Do you really want to delete this reply?');">
+                                                                    <input type="hidden" name="comment_id" value="<?php echo htmlspecialchars($reply["id"]); ?>">
+                                                                    <button type="submit" name="delete_comment" class="btn btn-outline-danger btn-sm">
+                                                                        Delete
+                                                                    </button>
+                                                                </form>
+                                                        <?php
+                                                            }
+                                                        ?>
+
                                                     </div>
                                             <?php
                                                 }

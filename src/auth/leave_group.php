@@ -39,7 +39,6 @@ try {
         $memberCount = (int) $stmt->fetchColumn();
 
         if ($memberCount === 1) {
-            // Sole member — leaving deletes the group
             $stmt = $con->prepare("SELECT picture FROM chat WHERE id = :id");
             $stmt->bindParam(':id', $cid);
             $stmt->execute();
@@ -51,7 +50,6 @@ try {
 
             $con->commit();
 
-            // Delete files only after DB commit succeeds
             if ($group && $group['picture']) {
                 $picPath = __DIR__ . '/../../public/' . $group['picture'];
                 if (file_exists($picPath)) {
@@ -73,7 +71,6 @@ try {
             exit;
         }
 
-        // Check if there is another admin
         $stmt = $con->prepare("SELECT COUNT(*) FROM chat_user WHERE chat_id = :cid AND role = 'admin' AND user_id != :uid");
         $stmt->bindParam(':cid', $cid);
         $stmt->bindParam(':uid', $uid);
@@ -81,7 +78,6 @@ try {
         $otherAdminCount = (int) $stmt->fetchColumn();
 
         if ($otherAdminCount === 0) {
-            // Auto-promote another member (lowest user_id as a stable fallback)
             $stmt = $con->prepare("SELECT user_id FROM chat_user WHERE chat_id = :cid AND user_id != :uid ORDER BY user_id ASC LIMIT 1");
             $stmt->bindParam(':cid', $cid);
             $stmt->bindParam(':uid', $uid);

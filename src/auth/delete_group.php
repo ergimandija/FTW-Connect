@@ -46,7 +46,6 @@ try {
     exit;
 }
 
-// Delete files only after DB commit succeeds
 if ($group && $group['picture']) {
     $picPath = __DIR__ . '/../../public/' . $group['picture'];
     if (file_exists($picPath)) {

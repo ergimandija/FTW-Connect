@@ -1,10 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include '../src/includes/header.php'; ?>
+<?php
+    include '../src/includes/header.php';
+
+    if (empty($_SESSION['uid'])) {
+        header('Location: login.php');
+        exit;
+    }
+
+    $cid = intval($_GET['cid'] ?? 0);
+    if ($cid <= 0) {
+        header('Location: userchats.php');
+        exit;
+    }
+
+    $stmt = $con->prepare("SELECT 1 FROM chat_user WHERE chat_id = :cid AND user_id = :uid");
+    $stmt->bindParam(':cid', $cid);
+    $stmt->bindParam(':uid', $_SESSION['uid']);
+    $stmt->execute();
+    if (!$stmt->fetch()) {
+        header('Location: userchats.php');
+        exit;
+    }
+?>
 <body>
     <div class="container mt-5">
         <div class="mb-4">
-            <a href="chat.php?cid=<?=$_GET['cid'];?>" class="btn btn-secondary">Back to chat</a>
+            <a href="chat.php?cid=<?= $cid ?>" class="btn btn-secondary">Back to chat</a>
             <h2 class="mt-3">Group Files</h2>
         </div>
 

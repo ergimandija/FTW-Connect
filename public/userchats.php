@@ -2,6 +2,7 @@
 <html lang="en">
 <?php 
 include '../src/includes/header.php';
+include '../src/auth/auth_check.php';
 ?>
 
 <div class="modal fade" id="archiveSuccessModal" tabindex="-1" aria-labelledby="successModalLabel">
@@ -63,10 +64,17 @@ include '../src/includes/header.php';
 
     <main class="conversation-main flex-grow-1 d-flex justify-content-center align-items-center">
 
+        <?php
+        if (isset($_GET['cid'])) {
+            include 'chat.php';
+        } else {
+        ?>
         <div class="empty-state text-center text-muted">
             <h3>Select a conversation</h3>
             <p class="mb-0">Your messages will appear here.</p>
-        </div>
+            </div>
+        <?php } ?>
+        
 
     </main>
 
