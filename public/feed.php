@@ -2,7 +2,11 @@
 <html lang="en">
 
 <?php
+   
+
     require_once '../src/includes/header.php';
+
+     include '../src/auth/auth_check.php';
 
     $isLoggedIn = isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true && isset($_SESSION["uid"]);
 
@@ -220,9 +224,7 @@
 
 
 <body>
-    <?php
-        include '../src/includes/navbar.php';
-    ?>
+    
      <div class="container my-4">
         <div class="row">
             <div class="col-lg-3 mb-4">

@@ -74,7 +74,7 @@ function loadChats() {
                              style="object-fit: cover;">
 
                         <div class="flex-grow-1">
-                            <a href="./chat.php?cid=${chat.id}" 
+                            <a href="?cid=${chat.id}" 
                                class="fw-bold text-decoration-none text-dark">
                                ${chat.name}
                             </a>
