@@ -10,6 +10,15 @@
 
     $isLoggedIn = isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true && isset($_SESSION["uid"]);
 
+    $currentUserStmt = $con->prepare("
+        SELECT name, profilePicturePath
+        FROM users
+        WHERE id = :user_id
+    ");
+    $currentUserStmt->bindParam(":user_id", $_SESSION["uid"]);
+    $currentUserStmt->execute();
+    $currentUser = $currentUserStmt->fetch(PDO::FETCH_ASSOC);
+
     if ($isLoggedIn && isset($_POST["create_post"]))
     {
         $imagePath = null;
@@ -204,6 +213,7 @@
         post.image_url,
         post.created_at,
         users.name,
+        users.profilePicturePath,
         COUNT(DISTINCT comment.id) AS comment_count,
         COUNT(DISTINCT post_likes.id) AS like_count,
         MAX(CASE WHEN post_likes.user_id = :current_user_id THEN 1 ELSE 0 END) AS user_liked
@@ -211,7 +221,7 @@
     LEFT JOIN users ON post.user_id = users.id
     LEFT JOIN comment ON comment.post_id = post.id
     LEFT JOIN post_likes ON post_likes.post_id = post.id
-    GROUP BY post.id, post.user_id, post.title, post.content, post.image_url, post.created_at, users.name
+    GROUP BY post.id, post.user_id, post.title, post.content, post.image_url, post.created_at, users.name, users.profilePicturePath
     ORDER BY post.created_at DESC
     ");
 
@@ -230,10 +240,27 @@
             <div class="col-lg-3 mb-4">
                 <div class="card shadow-sm">
                     <div class="card-body text-center">
-                        <img src="" class="rounded-circle mb-3" alt="Profile Picture">
-                        <h5 class="card-title mb-1">Max Mustermann</h5>
-                        <p class="text-muted small">Student at FH Technikum Wien</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+                        <?php
+                            $currentUserImage = "assets/img/anonymous.png";
+
+                            if (!empty($currentUser["profilePicturePath"]))
+                            {
+                                $currentUserImage = $currentUser["profilePicturePath"];
+                            }
+                        ?>
+
+                        <img 
+                            src="<?php echo htmlspecialchars($currentUserImage); ?>" 
+                            class="rounded-circle mb-3" 
+                            alt="Profile Picture"
+                            width="80"
+                            height="80"
+                        >
+
+                        <h5 class="card-title mb-1">
+                            <?php echo htmlspecialchars($currentUser["name"] ?? "User"); ?>
+                        </h5>
+                        <a href="profile.php" class="btn btn-outline-primary btn-sm w-100 mt-2">View Profile</a>
                     </div>
                 </div>
             </div>
@@ -276,9 +303,31 @@
                         <div class="card shadow-sm mb-4">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
-                                    <img src="" class="rounded-circle me-3" alt="Profile Picture">
+                                    <?php
+                                        $postUserImage = "assets/img/anonymous.png";
+
+                                        if (!empty($post["profilePicturePath"]))
+                                        {
+                                            $postUserImage = $post["profilePicturePath"];
+                                        }
+                                    ?>
+
+                                    <img 
+                                        src="<?php echo htmlspecialchars($postUserImage); ?>" 
+                                        class="rounded-circle me-3" 
+                                        alt="Profile Picture"
+                                        width="48"
+                                        height="48"
+                                    >
                                     <div>
-                                        <h6 class="mb-0"><?php echo htmlspecialchars($post["name"] ?? "Unknown User"); ?></h6>
+                                        <h6 class="mb-0">
+                                            <a 
+                                                href="profile.php?id=<?php echo htmlspecialchars($post["user_id"]); ?>" 
+                                                class="text-decoration-none text-dark"
+                                            >
+                                                <?php echo htmlspecialchars($post["name"] ?? "Unknown User"); ?>
+                                            </a>
+                                        </h6>
                                         <small class="text-muted"><?php echo htmlspecialchars($post["created_at"]); ?></small>
                                     </div>
                                 </div>
@@ -356,7 +405,7 @@
 
                                 <?php
                                     $commentsStmt = $con->prepare("
-                                        SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name
+                                        SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name, users.profilePicturePath
                                         FROM comment
                                         LEFT JOIN users ON comment.user_id = users.id
                                         WHERE comment.post_id = :post_id
@@ -373,9 +422,43 @@
                                     {
                                 ?>
                                         <div class="mt-3 p-2 bg-light rounded">
-                                            <strong><?php echo htmlspecialchars($comment["name"] ?? "Unknown User"); ?></strong>
-                                            <p class="mb-1"><?php echo nl2br(htmlspecialchars($comment["content"])); ?></p>
-                                            <small class="text-muted"><?php echo htmlspecialchars($comment["created_at"]); ?></small>
+                                            <?php
+                                                $commentUserImage = "assets/img/anonymous.png";
+
+                                                if (!empty($comment["profilePicturePath"]))
+                                                {
+                                                    $commentUserImage = $comment["profilePicturePath"];
+                                                }
+                                            ?>
+
+                                            <div class="d-flex align-items-start">
+                                                <img 
+                                                    src="<?php echo htmlspecialchars($commentUserImage); ?>" 
+                                                    class="rounded-circle me-2" 
+                                                    alt="Profile Picture"
+                                                    width="32"
+                                                    height="32"
+                                                >
+
+                                                <div>
+                                                    <strong>
+                                                        <a 
+                                                            href="profile.php?id=<?php echo htmlspecialchars($comment["user_id"]); ?>" 
+                                                            class="text-decoration-none text-reset"
+                                                        >
+                                                            <?php echo htmlspecialchars($comment["name"] ?? "Unknown User"); ?>
+                                                        </a>
+                                                    </strong>
+
+                                                    <p class="mb-1">
+                                                        <?php echo nl2br(htmlspecialchars($comment["content"])); ?>
+                                                    </p>
+
+                                                    <small class="text-muted">
+                                                        <?php echo htmlspecialchars($comment["created_at"]); ?>
+                                                    </small>
+                                                </div>
+                                            </div>
 
                                             <?php
                                                 if ($isLoggedIn && $comment["user_id"] == $_SESSION["uid"])
@@ -393,7 +476,7 @@
 
                                             <?php
                                                 $repliesStmt = $con->prepare("
-                                                    SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name
+                                                    SELECT comment.id, comment.user_id, comment.content, comment.created_at, users.name, users.profilePicturePath
                                                     FROM comment
                                                     LEFT JOIN users ON comment.user_id = users.id
                                                     WHERE comment.parent_comment_id = :parent_comment_id
@@ -409,9 +492,43 @@
                                                 {
                                             ?>
                                                     <div class="mt-2 ms-4 p-2 bg-white border rounded">
-                                                        <strong><?php echo htmlspecialchars($reply["name"] ?? "Unknown User"); ?></strong>
-                                                        <p class="mb-1"><?php echo nl2br(htmlspecialchars($reply["content"])); ?></p>
-                                                        <small class="text-muted"><?php echo htmlspecialchars($reply["created_at"]); ?></small>
+                                                        <?php
+                                                            $replyUserImage = "assets/img/anonymous.png";
+
+                                                            if (!empty($reply["profilePicturePath"]))
+                                                            {
+                                                                $replyUserImage = $reply["profilePicturePath"];
+                                                            }
+                                                        ?>
+
+                                                        <div class="d-flex align-items-start">
+                                                            <img 
+                                                                src="<?php echo htmlspecialchars($replyUserImage); ?>" 
+                                                                class="rounded-circle me-2" 
+                                                                alt="Profile Picture"
+                                                                width="28"
+                                                                height="28"
+                                                            >
+
+                                                            <div>
+                                                                <strong>
+                                                                    <a 
+                                                                        href="profile.php?id=<?php echo htmlspecialchars($reply["user_id"]); ?>" 
+                                                                        class="text-decoration-none text-reset"
+                                                                    >
+                                                                        <?php echo htmlspecialchars($reply["name"] ?? "Unknown User"); ?>
+                                                                    </a>
+                                                                </strong>
+
+                                                                <p class="mb-1">
+                                                                    <?php echo nl2br(htmlspecialchars($reply["content"])); ?>
+                                                                </p>
+
+                                                                <small class="text-muted">
+                                                                    <?php echo htmlspecialchars($reply["created_at"]); ?>
+                                                                </small>
+                                                            </div>
+                                                        </div>
 
                                                         <?php
                                                             if ($isLoggedIn && $reply["user_id"] == $_SESSION["uid"])
@@ -520,7 +637,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Suggestions</h5>
                                     <p class="mb-2">Connect with other students.</p>
-                                    <a href="#" class="btn btn-outline-primary btn-sm w-100">Find People</a>
+                                    <a href="userchats.php" class="btn btn-outline-primary btn-sm w-100">Chats</a>
                                 </div>
                             </div>
                         </div>
