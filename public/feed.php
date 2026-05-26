@@ -11,7 +11,7 @@
         $imagePath = null;
         $postContent = trim($_POST["post_content"]);
         $userId = $_SESSION["uid"];
-        $title = "Post";
+        $title = trim($_POST["post_title"]);
 
         if (!empty($_FILES["post_image"]["tmp_name"]) && is_uploaded_file($_FILES["post_image"]["tmp_name"]))
         {
@@ -40,7 +40,7 @@
             }
         }
 
-        if ($postContent !== "" || $imagePath !== null)
+        if ($title !== "" && ($postContent !== "" || $imagePath !== null))
         {
             $sql = "INSERT INTO post (title, content, image_url, user_id)
             VALUES (:title, :content, :image_url, :user_id)";
@@ -192,20 +192,27 @@
 
 
     $postsStmt = $con->prepare("
-        SELECT 
-            post.id,
-            post.user_id,
-            post.content,
-            post.image_url,
-            post.created_at,
-            users.name,
-            COUNT(comment.id) AS comment_count
-        FROM post
-        LEFT JOIN users ON post.user_id = users.id
-        LEFT JOIN comment ON comment.post_id = post.id
-        GROUP BY post.id, post.user_id, post.content, post.image_url, post.created_at, users.name
-        ORDER BY post.created_at DESC
+    SELECT 
+        post.id,
+        post.user_id,
+        post.title,
+        post.content,
+        post.image_url,
+        post.created_at,
+        users.name,
+        COUNT(DISTINCT comment.id) AS comment_count,
+        COUNT(DISTINCT post_likes.id) AS like_count,
+        MAX(CASE WHEN post_likes.user_id = :current_user_id THEN 1 ELSE 0 END) AS user_liked
+    FROM post
+    LEFT JOIN users ON post.user_id = users.id
+    LEFT JOIN comment ON comment.post_id = post.id
+    LEFT JOIN post_likes ON post_likes.post_id = post.id
+    GROUP BY post.id, post.user_id, post.title, post.content, post.image_url, post.created_at, users.name
+    ORDER BY post.created_at DESC
     ");
+
+    $currentUserId = $isLoggedIn ? $_SESSION["uid"] : 0;
+    $postsStmt->bindParam(":current_user_id", $currentUserId);
     $postsStmt->execute();
     $posts = $postsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -229,10 +236,23 @@
                 </div>
             </div>
             <div class="col-lg-6 mb-4">
+                <?php
+                    if ($isLoggedIn)
+                    {
+                ?>
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Create Post</h5>
                         <form action="" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    name="post_title" 
+                                    placeholder="Post title"
+                                    required
+                                >
+                            </div>
                             <div class="mb-3">
                                 <textarea class="form-control" name="post_content" rows="3" placeholder="What's on your mind?"></textarea>
                             </div>
@@ -244,6 +264,9 @@
                         </form>
                     </div>
                 </div>
+                <?php
+                    }
+                ?>
                 <?php
                     foreach ($posts as $post)
                     {
@@ -257,7 +280,9 @@
                                         <small class="text-muted"><?php echo htmlspecialchars($post["created_at"]); ?></small>
                                     </div>
                                 </div>
-
+                                <h5 class="card-title">
+                                    <?php echo htmlspecialchars($post["title"]); ?>
+                                </h5>
                                 <?php
                                     if (!empty($post["content"]))
                                     {
@@ -270,7 +295,7 @@
                                 ?>
 
                                 <?php
-                                    if (!empty($post["image_url"]))
+                                    if (!empty($post["image_url"]) && file_exists(__DIR__ . "/" . $post["image_url"]))
                                     {
                                 ?>
                                         <img src="<?php echo htmlspecialchars($post["image_url"]); ?>" class="img-fluid rounded mb-3" alt="Post Image">
@@ -279,8 +304,33 @@
                                 ?>
 
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-outline-primary btn-sm">Like</button>
-                                    <button class="btn btn-outline-secondary btn-sm" type="button">
+                                    <?php
+                                        if ($isLoggedIn)
+                                        {
+                                    ?>
+                                        <button 
+                                            class="btn btn-sm like-button <?php echo $post["user_liked"] ? "btn-primary" : "btn-outline-primary"; ?>"
+                                            type="button"
+                                            data-post-id="<?php echo htmlspecialchars($post["id"]); ?>"
+                                        >
+                                            Like <span class="like-count"><?php echo htmlspecialchars($post["like_count"]); ?></span>
+                                        </button>
+                                    <?php
+                                        }
+                                        else
+                                        {
+                                    ?>
+                                        <button class="btn btn-outline-primary btn-sm" type="button" disabled>
+                                            Like <span><?php echo htmlspecialchars($post["like_count"]); ?></span>
+                                        </button>
+                                    <?php
+                                        }
+                                    ?>
+                                    <button 
+                                        class="btn btn-outline-secondary btn-sm comment-jump-button" 
+                                        type="button"
+                                        data-post-id="<?php echo htmlspecialchars($post["id"]); ?>"
+                                    >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat" viewBox="0 0 16 16">
                                             <path d="M2.678 11.894a1 1 0 0 1 .287.801 11 11 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8 8 0 0 0 8 14c3.996 0 7-2.807 7-6s-3.004-6-7-6-7 2.808-7 6c0 1.468.617 2.83 1.678 3.894m-.493 3.905a22 22 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a10 10 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7-3.582 7-8 7a9 9 0 0 1-2.347-.306c-.52.263-1.639.742-3.468 1.105"/>
                                         </svg>
@@ -415,13 +465,19 @@
                                     if ($isLoggedIn)
                                     {
                                 ?>
-                                        <form action="" method="post" class="mt-3">
+                                        <form 
+                                            action="" 
+                                            method="post" 
+                                            class="mt-3" 
+                                            id="comment-form-<?php echo htmlspecialchars($post["id"]); ?>"
+                                        >
                                             <input type="hidden" name="post_id" value="<?php echo htmlspecialchars($post["id"]); ?>">
                                             <div class="input-group">
                                                 <input 
                                                     type="text" 
                                                     name="comment_content" 
                                                     class="form-control" 
+                                                    id="comment-input-<?php echo htmlspecialchars($post["id"]); ?>"
                                                     placeholder="Write a comment..."
                                                     required
                                                 >
@@ -468,5 +524,58 @@
                         </div>
                     </div>
                 </div>
+<script>
+    document.querySelectorAll(".like-button").forEach(function(button) {
+        button.addEventListener("click", function() {
+            const postId = button.dataset.postId;
+
+            fetch("like_post.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "post_id=" + encodeURIComponent(postId)
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    const likeCount = button.querySelector(".like-count");
+                    likeCount.textContent = data.like_count;
+
+                    if (data.liked) {
+                        button.classList.remove("btn-outline-primary");
+                        button.classList.add("btn-primary");
+                    } else {
+                        button.classList.remove("btn-primary");
+                        button.classList.add("btn-outline-primary");
+                    }
+                }
+            });
+        });
+    });
+</script>
+<script>
+    document.querySelectorAll(".comment-jump-button").forEach(function(button) {
+        button.addEventListener("click", function() {
+            const postId = button.dataset.postId;
+
+            const commentForm = document.getElementById("comment-form-" + postId);
+            const commentInput = document.getElementById("comment-input-" + postId);
+
+            if (commentForm) {
+                commentForm.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+            }
+
+            if (commentInput) {
+                commentInput.focus();
+            }
+        });
+    });
+</script>
 </body>
 </html>
