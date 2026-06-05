@@ -17,13 +17,13 @@ if ($cid <= 0) {
     die('Invalid group ID');
 }
 
-$stmt = $con->prepare("SELECT chat_id FROM chat_user WHERE chat_id = :cid AND user_id = :uid");
+$stmt = $con->prepare("SELECT role FROM chat_user WHERE chat_id = :cid AND user_id = :uid");
 $stmt->bindParam(':cid', $cid);
 $stmt->bindParam(':uid', $_SESSION['uid']);
 $stmt->execute();
 $memberCheck = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$memberCheck) {
+if (!$memberCheck || $memberCheck['role'] !== 'admin') {
     $accessDenied = true;
 } else {
     $stmt = $con->prepare("SELECT name, description, picture FROM chat WHERE id = :id");

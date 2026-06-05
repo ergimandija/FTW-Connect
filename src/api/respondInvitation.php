@@ -49,7 +49,7 @@ try {
     if ($action === 'accept') {
         $stmt = $con->prepare("
             INSERT INTO chat_user (chat_id, user_id, role, type)
-            VALUES (:chat_id, :user_id, NULL, 'group')
+            VALUES (:chat_id, :user_id, 'member', 'group')
         ");
 
         $stmt->bindParam(':chat_id', $invitation['chat_id']);
