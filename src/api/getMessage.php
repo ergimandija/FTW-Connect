@@ -23,9 +23,11 @@ if (isset($_GET['cid'])) {
             $offset = max(0, $count - $limit);
 
             $stmt = $con->prepare("
-                SELECT m.id, m.chat_id, m.sender_id, m.content, m.sent_at, u.name AS sender_name
+                SELECT m.id, m.chat_id, m.sender_id, m.content, m.sent_at,
+                       COALESCE(cu.nickname, u.name) AS sender_name
                 FROM message m
                 JOIN users u ON u.id = m.sender_id
+                LEFT JOIN chat_user cu ON cu.chat_id = m.chat_id AND cu.user_id = m.sender_id
                 WHERE m.chat_id = :chid
                 ORDER BY m.sent_at ASC
                 LIMIT " . $limit . " OFFSET " . $offset);

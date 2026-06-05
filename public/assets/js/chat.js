@@ -142,6 +142,23 @@ function loadMessages() {
 }
 
 
+function setNickname(cid, uid, current) {
+    const input = prompt("Set nickname (leave blank to clear):", current);
+    if (input === null) return;
+
+    fetch("../src/api/setNickname.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cid, uid, nickname: input.trim() })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "ok") location.reload();
+        else alert("Error: " + data.message);
+    });
+}
+
+
 function manageMember(cid, uid, action) {
     const messages = {
         kick:    "Are you sure you want to kick this member?",

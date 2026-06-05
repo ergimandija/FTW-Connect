@@ -1,5 +1,7 @@
 ALTER TABLE Chat ADD COLUMN pinned_message_id INT NULL;
 
+ALTER TABLE Chat_User ADD COLUMN nickname VARCHAR(255) NULL;
+
 CREATE TABLE Message_Reaction (
     message_id INT NOT NULL,
     user_id INT NOT NULL,

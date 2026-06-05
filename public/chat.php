@@ -32,7 +32,7 @@
         $groupDesc = htmlspecialchars($group['description'] ?? '');
 
         $stmt = $con->prepare("
-            SELECT u.id, u.name, cu.role
+            SELECT u.id, u.name, cu.role, cu.nickname
             FROM users u
             JOIN chat_user cu ON cu.user_id = u.id
             WHERE cu.chat_id = :cid
@@ -106,11 +106,27 @@
             <?php endif; ?>
             <ul class="list-group list-group-flush border-top">
                 <?php foreach ($members as $m): ?>
+                <?php
+                    $displayName  = htmlspecialchars($m['nickname'] ?? $m['name']);
+                    $realName     = htmlspecialchars($m['name']);
+                    $canNickname  = $isAdmin || $m['id'] == $_SESSION['uid'];
+                ?>
                 <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
-                    <span><?= htmlspecialchars($m['name']) ?></span>
+                    <span>
+                        <?= $displayName ?>
+                        <?php if (!empty($m['nickname'])): ?>
+                        <small class="text-muted ms-1">(<?= $realName ?>)</small>
+                        <?php endif; ?>
+                    </span>
                     <div class="d-flex align-items-center gap-2">
                         <?php if ($m['role'] === 'admin'): ?>
                         <span class="badge bg-warning text-dark">admin</span>
+                        <?php endif; ?>
+                        <?php if ($canNickname): ?>
+                        <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                                onclick="setNickname(<?=$cid?>, <?=$m['id']?>, <?= json_encode($m['nickname'] ?? '') ?>)">
+                            ✏️
+                        </button>
                         <?php endif; ?>
                         <?php if ($isAdmin && $m['id'] != $_SESSION['uid']): ?>
                         <button class="btn btn-sm btn-outline-secondary py-0 px-2"
