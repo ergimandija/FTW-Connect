@@ -24,13 +24,15 @@ $stmt->bindParam(":uid",$_SESSION['uid']);
 $stmt->execute();
 $check = $stmt->fetch(PDO::FETCH_ASSOC);
 if(!empty($check['chat_id'])){
-$stmt = $con->prepare('INSERT INTO message(chat_id,sender_id,content) VALUES(:chatId,:id,:message)');
+$stmt = $con->prepare('INSERT INTO message(chat_id,sender_id,content,picturePath) VALUES(:chatId,:id,:message,:picturePath)');
 $stmt->bindParam(":chatId", $data['cid']);
 $stmt->bindParam(":id", $_SESSION['uid']);
 $message = $data['message'];
-
+$attachedPicture = ($data['attachedPicture']=='')?null:$data['attachedPicture'];
 $encryptedMessage = Crypto::encrypt($message);
 $stmt->bindParam(":message", $encryptedMessage);
+$stmt->bindParam(":picturePath", $attachedPicture);
+
 $stmt->execute();
 echo  json_encode([
         "status" => "OK",

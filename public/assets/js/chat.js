@@ -27,13 +27,30 @@ document.getElementById("chatForm").addEventListener("submit", (e) => {
         },
         body: JSON.stringify({
             message: document.getElementById("message").value,
-            cid: document.getElementById("chatId").value
+            cid: document.getElementById("chatId").value,
+            attachedPicture: document.getElementById("fileInput").files[0]?.name || ''
         })
          
     })
-        .then(res => res.json())
+        .then(res => res.text())
         .then(data => console.log(data));
         document.getElementById("message").value = "";
+
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append("picture", file);    
+    fetch("../src/api/uploadPicture.php",{
+        method:"POST",
+        body: formData
+         
+    }).then(response => response.text())   // or response.json() if PHP returns JSON
+    .then(data => {
+        console.log("Server response:", data);
+    })
+    .catch(error => {
+        console.error("Upload error:", error);
+    });  
     }
 });   
 
@@ -80,7 +97,17 @@ function loadMessages(){
         const time = document.createElement("div");
         time.classList.add("msg-time");
         time.textContent = element.sent_at;
+        if (element.picturePath) {
+            const img = document.createElement("img");
+            img.classList.add("msg-image");
+            img.src = "./assets/img/chats/" + element.picturePath;
 
+            img.onerror = () => {
+                img.remove(); // or set fallback image if you want
+            };
+
+            bubble.appendChild(img);
+        }
         bubble.appendChild(content);
         bubble.appendChild(time);
         const editBtn = document.createElement("button");

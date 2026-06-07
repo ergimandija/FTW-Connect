@@ -6,7 +6,6 @@
 
 ?>
 <script src="assets/js/chat.js" defer></script>
-
 <body class="bg-light">
 
 <div class="container py-3">
@@ -33,7 +32,14 @@
                     placeholder="Type a message..."
                     autocomplete="off"
                 >
-
+                <input 
+                    type="file"
+                    id="fileInput"
+                     accept=".jpg,.jpeg,.png,.gif,.webp"
+                    hidden/>
+                <label for="fileInput" class="btn btn-primary" id="attachPicture">
+                    📎
+                </label>
                 <button class="btn btn-primary px-4" type="submit">
                     Send
                 </button>
