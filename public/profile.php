@@ -60,6 +60,7 @@ if (isset($_GET['success'])) {
 </div>
 
 <div class="container">
+    <?php include '../src/includes/search_bar.php'; ?>
     <div class="row">
         
         <div class="col-lg-4">
