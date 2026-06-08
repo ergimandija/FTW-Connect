@@ -2,6 +2,7 @@
 include '../src/includes/header.php'; 
 
 include '../src/auth/auth_check.php';
+include '../src/includes/open_chat.php'; 
 
 $loggedInUserId = $_SESSION['uid'];
 
@@ -94,6 +95,13 @@ if (isset($_GET['success'])) {
                                 <i class="bi bi-trash-fill me-2"></i>Delete Account
                             </button>
                         </div>
+
+                    <?php else: ?>
+                       <div>
+                                <a class="btn btn-primary" href="?id=<?php echo $userId ?>&message_user=<?php echo $userId ?>" >
+                                Message User
+                                </a>
+                            </div>
                     <?php endif; ?>
                 </div>
             </div>
