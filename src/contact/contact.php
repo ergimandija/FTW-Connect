@@ -6,6 +6,36 @@ $email   = "";
 $subject = "";
 $message = "";
 
+function sendContactEmail(string $name, string $email, string $subject, string $message): bool {
+    $payload = json_encode([
+        'from'    => RESEND_FROM,
+        'to'      => [RESEND_TO],
+        'reply_to'=> $email,
+        'subject' => "[FTW Connect] $subject",
+        'text'    => "New contact form submission.\n\n"
+                   . "Name:    $name\n"
+                   . "Email:   $email\n"
+                   . "Subject: $subject\n\n"
+                   . "Message:\n$message",
+    ]);
+
+    $ch = curl_init('https://api.resend.com/emails');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . RESEND_API_KEY,
+        ],
+    ]);
+
+    curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    return $httpCode === 200 || $httpCode === 201;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name    = trim($_POST["name"]    ?? "");
     $email   = trim($_POST["email"]   ?? "");
@@ -37,11 +67,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 ':subject' => $subject,
                 ':message' => $message,
             ]);
+        } catch (PDOException $e) {
+            $errors[] = "Failed to save message. Please try again later.";
+        }
 
+        if (empty($errors)) {
+            sendContactEmail($name, $email, $subject, $message);
             $success = "Your message has been sent. We'll get back to you shortly.";
             $name = $email = $subject = $message = "";
-        } catch (PDOException $e) {
-            $errors[] = "Failed to send message. Please try again later.";
         }
     }
 }
