@@ -53,7 +53,7 @@ if ($stmt->rowCount() > 0) {
     exit;
 }
 
-$stmt = $con->prepare("SELECT id FROM invitation WHERE chat_id = :cid AND invited_user = :uid AND status = 'pending'");
+$stmt = $con->prepare("SELECT id FROM Invitation WHERE chat_id = :cid AND invited_user = :uid AND status = 'pending'");
 $stmt->bindParam(':cid', $chat_id);
 $stmt->bindParam(':uid', $user_id);
 $stmt->execute();
@@ -66,7 +66,7 @@ if ($stmt->rowCount() > 0) {
 
 try {
     $stmt = $con->prepare("
-        INSERT INTO invitation (chat_id, invited_by, invited_user)
+        INSERT INTO Invitation (chat_id, invited_by, invited_user)
         VALUES (:chat_id, :invited_by, :invited_user)
     ");
 

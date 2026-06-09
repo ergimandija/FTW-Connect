@@ -38,7 +38,7 @@ $stmt = $con->prepare("
     AND u.id NOT IN (
         SELECT user_id FROM chat_user WHERE chat_id = :cid
         UNION
-        SELECT invited_user FROM invitation WHERE chat_id = :cid AND status = 'pending'
+        SELECT invited_user FROM Invitation WHERE chat_id = :cid AND status = 'pending'
     )
     AND u.id != :uid
     LIMIT 10

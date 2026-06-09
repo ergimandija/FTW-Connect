@@ -17,7 +17,7 @@ $stmt = $con->prepare("
         COALESCE(c.picture, './assets/img/anonymous.png') AS chat_picture,
         u.name AS invited_by_name,
         i.created_at
-    FROM invitation i
+    FROM Invitation i
     JOIN chat c ON i.chat_id = c.id
     JOIN users u ON i.invited_by = u.id
     WHERE i.invited_user = :uid AND i.status = 'pending'

@@ -21,7 +21,7 @@ if ($invitation_id <= 0 || !in_array($action, ['accept', 'decline'], true)) {
 }
 
 $stmt = $con->prepare("
-    SELECT chat_id, status FROM invitation
+    SELECT chat_id, status FROM Invitation
     WHERE id = :id AND invited_user = :uid
 ");
 
@@ -58,7 +58,7 @@ try {
     }
 
     $stmt = $con->prepare("
-        UPDATE invitation
+        UPDATE Invitation
         SET status = :status
         WHERE id = :id
     ");

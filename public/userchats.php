@@ -44,6 +44,10 @@ include '../src/auth/auth_check.php';
             </div>
         </div>
 
+        <div class="mb-3">
+            <a href="invitations.php" class="btn btn-outline-primary btn-sm w-100">Invitations</a>
+        </div>
+
         <div id="userList-container" class="chat-list mb-3">
             <button 
                 onclick='showContainer("archive-container")' 
