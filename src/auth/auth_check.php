@@ -23,4 +23,14 @@ if (!isset($_SESSION['uid'])) {
     header("Location: login.php");
     exit();
 }
+
+if (isset($con)) {
+    try {
+        $updateStmt = $con->prepare("UPDATE users SET last_seen = NOW() WHERE id = ?");
+        $updateStmt->execute([$_SESSION['uid']]);
+    } catch (PDOException $e) {
+        // Fail silently in production or log it so it doesn't break the user experience
+        error_log("Failed to update last_seen: " . $e->getMessage());
+    }
+}
 ?>
