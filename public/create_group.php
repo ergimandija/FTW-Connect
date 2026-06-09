@@ -3,7 +3,7 @@
 
 <?php include '../src/auth/auth_check.php';
 include '../src/includes/header.php';?>
-<?php require_once __DIR__ . '/../src/auth/create_group.php'; ?>
+<?php require_once __DIR__ . '/../src/groups/create_group.php'; ?>
 <link rel="stylesheet" href="./assets/styles/create_group.css">
 
 

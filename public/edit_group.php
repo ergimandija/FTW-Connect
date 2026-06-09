@@ -2,7 +2,7 @@
 <html lang="en">
 
 <?php include '../src/includes/header.php';?>
-<?php require_once __DIR__ . '/../src/auth/edit_group.php'; ?>
+<?php require_once __DIR__ . '/../src/groups/edit_group.php'; ?>
 <link rel="stylesheet" href="./assets/styles/create_group.css">
 
 <body>

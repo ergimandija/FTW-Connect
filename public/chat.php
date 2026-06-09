@@ -82,12 +82,12 @@
     </div>
 
     <?php if ($isMember): ?>
-    <form id="leaveForm" method="POST" action="../src/auth/leave_group.php">
+    <form id="leaveForm" method="POST" action="../src/groups/leave_group.php">
         <input type="hidden" name="cid" value="<?=$cid?>">
     </form>
     <?php endif; ?>
     <?php if ($isAdmin): ?>
-    <form id="deleteForm" method="POST" action="../src/auth/delete_group.php">
+    <form id="deleteForm" method="POST" action="../src/groups/delete_group.php">
         <input type="hidden" name="cid" value="<?=$cid?>">
     </form>
     <?php endif; ?>
