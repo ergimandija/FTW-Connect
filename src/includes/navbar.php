@@ -33,6 +33,9 @@ $isLoggedIn = isset($_SESSION['uid']);
         <a href="./login.php" class="nav-item">Login</a>
         <a href="./register.php" class="nav-item">Register</a>
       <?php endif; ?>
+
+      <a href="./aboutus.php" class="nav-item">About Us</a>
+
     </nav>
 
   </div>
