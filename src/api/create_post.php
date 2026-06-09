@@ -76,7 +76,7 @@ try {
         $userId
     ]);
 
-    header("Location: ../../public/profile.php?success=Post created successfully");
+    header("Location: ../../public/profile.php");
     exit;
 
 } catch (PDOException $e) {
