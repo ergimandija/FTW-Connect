@@ -70,6 +70,7 @@ include '../src/auth/auth_check.php';
 
         <?php
         if (isset($_GET['cid'])) {
+            $embedded = true;
             include 'chat.php';
         } else {
         ?>

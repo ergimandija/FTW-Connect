@@ -1,7 +1,9 @@
+<?php if (empty($embedded)): ?>
 <!DOCTYPE html>
 <html lang="en">
+<?php include '../src/includes/header.php'; ?>
+<?php endif; ?>
 <?php
-    include '../src/includes/header.php';
 
     if (empty($_SESSION['uid'])) {
         header('Location: login.php');
@@ -56,8 +58,7 @@
         <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="group_files.php?cid=<?=$cid?>">View Files</a></li>
             <li><a class="dropdown-item" href="invite.php?cid=<?=$cid?>">Invite Members</a></li>
-            <li><a class="dropdown-item" href="file_upload.php?cid=<?=$cid?>">Upload File</a></li>
-            <?php if ($isAdmin): ?>
+                <?php if ($isAdmin): ?>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="edit_group.php?cid=<?=$cid?>">Edit Group</a></li>
             <?php endif; ?>
@@ -150,7 +151,8 @@
 
             <div id="messageContainer" class="chat-box p-3 overflow-auto"></div>
 
-            <form id="chatForm" class="border-top p-2 d-flex gap-2 bg-white">
+            <div id="fileUploadFeedback" class="px-3 pt-2 small d-none"></div>
+            <form id="chatForm" class="border-top p-2 d-flex gap-2 bg-white align-items-center">
                 <input
                     type="text"
                     id="message"
@@ -158,16 +160,54 @@
                     placeholder="Type a message..."
                     autocomplete="off"
                 >
+                <input type="file" id="fileInput" name="file" hidden
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.mp4,.mp3">
+                <label for="fileInput" class="btn btn-outline-secondary px-3 mb-0" title="Attach file">📎</label>
                 <button class="btn btn-primary px-4" type="submit">Send</button>
                 <input type="hidden" id="chatId" value="<?=$cid?>">
                 <input type="hidden" id="uid_reference" value="<?=$_SESSION['uid']?>">
                 <input type="hidden" id="loadCount" value="1">
             </form>
+            <script>
+                document.getElementById('fileInput').addEventListener('change', async function () {
+                    const file = this.files[0];
+                    if (!file) return;
+
+                    const feedback = document.getElementById('fileUploadFeedback');
+                    feedback.textContent = 'Uploading…';
+                    feedback.className = 'px-3 pt-2 small text-muted';
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('cid', document.getElementById('chatId').value);
+
+                    try {
+                        const res = await fetch('../src/api/uploadFile.php', { method: 'POST', body: formData });
+                        const data = await res.json();
+
+                        if (data.status === 'success') {
+                            feedback.textContent = '✓ File uploaded successfully.';
+                            feedback.className = 'px-3 pt-2 small text-success';
+                        } else {
+                            feedback.textContent = '✗ ' + data.message;
+                            feedback.className = 'px-3 pt-2 small text-danger';
+                        }
+                    } catch (e) {
+                        feedback.textContent = '✗ Upload failed.';
+                        feedback.className = 'px-3 pt-2 small text-danger';
+                    }
+
+                    this.value = '';
+                    setTimeout(() => { feedback.className = 'px-3 pt-2 small d-none'; }, 4000);
+                });
+            </script>
 
         </div>
     </div>
 
 </div>
 
+<?php if (empty($embedded)): ?>
 </body>
 </html>
+<?php endif; ?>
