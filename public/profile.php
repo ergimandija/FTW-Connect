@@ -36,6 +36,50 @@ if (isset($_GET['success'])) {
     $message = "Error: " . htmlspecialchars($_GET['error']);
     $messageType = "danger";
 }
+
+function formatLastSeen($timestamp) {
+    if (empty($timestamp)) {
+        return "Never";
+    }
+
+    $tz = new DateTimeZone('Europe/Vienna');
+
+    try {
+        $lastSeen = new DateTime($timestamp, $tz);
+    } catch (Exception $e) {
+        return "Never";
+    }
+
+    $now = new DateTime('now', $tz);
+    $diff = $now->getTimestamp() - $lastSeen->getTimestamp();
+
+    if ($diff < 0) {
+        $diff = 0;
+    }
+
+
+    // If active in the last 3 minutes, consider them online
+    if ($diff < 180) {
+        return '<span class="badge bg-success">Online</span>';
+    }
+
+    $minutes = floor($diff / 60);
+    if ($minutes < 60) {
+        return "Last seen " . $minutes . "m ago";
+    }
+
+    $hours = floor($diff / 3600);
+    if ($hours < 24) {
+        return "Last seen " . $hours . "h ago";
+    }
+
+    $days = floor($diff / 86400);
+    if ($days < 7) {
+        return "Last seen " . $days . "d ago";
+    }
+
+    return "Last seen on " . $lastSeen->format('M d, Y');
+}
 ?>
 
 <!DOCTYPE html>
@@ -74,6 +118,13 @@ if (isset($_GET['success'])) {
                     <h4 class="mb-1"><?= htmlspecialchars($user['name']) ?></h4>
                     <p class="text-muted small mb-3"><?= htmlspecialchars($user['email']) ?></p>
                     
+                    <?php if (!$isOwnProfile): ?>
+                        <div class="mb-3 small">
+                            <i class="bi bi-eye text-muted me-1"></i> 
+                            <?= formatLastSeen($user['last_seen'] ?? '') ?>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if($user['status']): ?>
                         <div class="mb-3">
                             <span class="status-badge">
@@ -119,9 +170,15 @@ if (isset($_GET['success'])) {
             <?php if($isOwnProfile): ?>
             <div class="post-card p-4">
                 <h5 class="mb-3">Create a Post</h5>
-                <form action="backend/create_post.php" method="POST">
+                <form action="../src/api/create_post.php" method="POST" enctype="multipart/form-data">
                     <input type="text" name="title" class="form-control mb-2" placeholder="Post title" required>
+
                     <textarea name="content" class="form-control mb-3" rows="3" placeholder="Share your thoughts..."></textarea>
+
+                    <div class="mb-3">
+                        <input type="file" name="post_image" class="form-control" accept="image/*">
+                    </div>
+
                     <div class="text-end">
                         <button type="submit" class="btn btn-outline-ftw">Post</button>
                     </div>
