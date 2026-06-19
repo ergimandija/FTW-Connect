@@ -78,3 +78,56 @@ main {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important;
 }
+
+.about-box {
+    background-color: #4D8C5980;
+}
+
+.flip-card {
+    height: 220px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 1.3s ease;
+    transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    inset: 0;
+    background-color: #D8E0DB;
+    border-radius: 24px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 32px;
+    text-align: center;
+}
+
+.flip-card-back {
+    transform: rotateY(180deg);
+}
+
+.team-card {
+    min-height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 24px;
+    background-color: #D8E0DB;
+}

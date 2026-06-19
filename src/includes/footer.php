@@ -8,7 +8,7 @@
         <div class="footer-links">
             <a href="#">Impressum</a>
             <a href="#">Datenschutz</a>
-            <a href="#">Kontakt</a>
+            <a href="contact.php">Kontakt</a>
         </div>
 
     </div>

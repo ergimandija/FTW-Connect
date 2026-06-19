@@ -66,18 +66,22 @@ function loadChats() {
                 const card = document.createElement("div");
                 card.className = "card mb-2 shadow-sm";
 
+                
+
                 card.innerHTML = `
                     <div class="card-body d-flex align-items-center">
-                        <img src="${chat.picture}" 
-                             class="rounded-circle me-3" 
-                             width="50" height="50" 
+                        <img src="${chat.picture}"
+                             class="rounded-circle me-3"
+                             width="50" height="50"
                              style="object-fit: cover;">
 
                         <div class="flex-grow-1">
-                            <a href="?cid=${chat.id}" 
-                               class="fw-bold text-decoration-none text-dark">
-                               ${chat.name}
-                            </a>
+                            <div class="d-flex align-items-center">
+                                <a href="?cid=${chat.id}"
+                                   class="fw-bold text-decoration-none text-dark">
+                                   ${chat.name}
+                                </a>
+                            </div>
                             <p class="mb-0 text-muted small">
                                 ${chat.description}
                             </p>

@@ -15,12 +15,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && empty($errors)) {
         $errors[] = "No file selected.";
     } else {
 
-        $memberCheck = $db->prepare("SELECT chat_id FROM chat_user WHERE chat_id = ? AND user_id = ?");
-        $memberCheck->bind_param("ii", $chatId, $_SESSION["uid"]);
+        $memberCheck = $con->prepare("SELECT chat_id FROM chat_user WHERE chat_id = :cid AND user_id = :uid");
+        $memberCheck->bindParam(":cid", $chatId);
+        $memberCheck->bindParam(":uid", $_SESSION["uid"]);
         $memberCheck->execute();
-        $memberCheck->store_result();
-        $isMember = $memberCheck->num_rows === 1;
-        $memberCheck->close();
+        $isMember = $memberCheck->rowCount() === 1;
 
         if (!$isMember) {
             $errors[] = "You are not a member of this group.";

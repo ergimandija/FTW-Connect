@@ -1,5 +1,14 @@
 <?php
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require __DIR__ . "/../PHPMailer/src/Exception.php";
+require __DIR__ . "/../PHPMailer/src/PHPMailer.php";
+require __DIR__ . "/../PHPMailer/src/SMTP.php";
+
+//require __DIR__ . "/../vendor/autoload.php";
+
 $email = "";
 $errors = [];
 $success = "";
@@ -18,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $stmt = $con->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
-        $user = $stmt->fetch(); // Holt die nächste Zeile als Array
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user) {
             $userId = $user["id"];
@@ -34,16 +43,43 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ");
 
             $updateStmt->execute([$token, $expires, $userId]);
-            $resetLink = "http://localhost:3000/public/reset_password.php?token=" . $token;
 
-            $success = "Reset link generated: $resetLink";
+            $resetLink = "http://localhost:3000/public/reset_password.php?token=" . urlencode($token);
 
-            //  Later: replace this with email sending
+            $mail = new PHPMailer(true);
 
-        } else {
-            $success = "If this email exists, a reset link has been sent.";
+            try {
+                $mail->isSMTP();
+                $mail->Host = "smtp.gmail.com";
+                $mail->SMTPAuth = true;
+                $mail->Username = $phpmail;
+                $mail->Password = $phpmailPassword;
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+
+                $mail->setFrom($mail, "FTW Connect");
+                $mail->addAddress($email);
+
+                $mail->isHTML(true);
+                $mail->Subject = "Reset your password";
+                $mail->Body = "
+                    <p>Hello,</p>
+                    <p>Click the link below to reset your password:</p>
+                    <p><a href='$resetLink'>$resetLink</a></p>
+                    <p>This link expires in 1 hour.</p>
+                ";
+
+                $mail->AltBody = "Reset your password using this link: $resetLink";
+
+                $mail->send();
+
+            } catch (Exception $e) {
+                // Optional for development only:
+                // error_log("Mailer Error: " . $mail->ErrorInfo);
+            }
         }
 
+        $success = "If this email exists, a reset link has been sent.";
     }
 }
 ?>

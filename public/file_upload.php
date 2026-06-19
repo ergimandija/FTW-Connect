@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <?php include '../src/auth/auth_check.php'; ?>
-<?php require_once __DIR__ . '/../src/db/db.php'; ?>
 <?php require_once __DIR__ . '/../src/auth/file_upload.php'; ?>
 <html lang="en">
 <head>
@@ -45,7 +44,7 @@
                     ?>
                 </div>
 
-                <form method="POST" action="upload_file.php?cid=<?= (int)$chatId ?>" enctype="multipart/form-data">
+                <form method="POST" action="file_upload.php?cid=<?= (int)$chatId ?>" enctype="multipart/form-data">
 
                     <input type="hidden" name="cid" value="<?= (int)$chatId ?>">
 

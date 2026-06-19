@@ -1,5 +1,8 @@
 <?php
 $errors = [];
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -7,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = trim($_POST["password"] ?? "");
 
     try {
-        $sql = "SELECT id, name, email, pwdHash, failed_attempts, locked_until FROM users WHERE email = ?";
+        $sql = "SELECT id, name, email, pwdHash, failed_attempts, locked_until, status  FROM users WHERE email = ?";
         $stmt = $con->prepare($sql);
         $stmt->execute([$username]);
         $user = $stmt->fetch();
@@ -17,9 +20,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $passwordHash = $user["pwdHash"];
             $failedAttempts = $user["failed_attempts"];
             $lockedUntil = $user["locked_until"];
+            $status = $user["status"];
 
-            
-            if ($lockedUntil && strtotime($lockedUntil) > time()) {
+            if ($status !== "active") {
+                $errors[] = "Your account is inactive. Please verify your email address.";
+            } elseif ($lockedUntil && strtotime($lockedUntil) > time()) {
                 $errors[] = "Account is locked. Try again later.";
             } 
             else {
