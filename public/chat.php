@@ -1,161 +1,34 @@
-<?php if (empty($embedded)): ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php include '../src/includes/header.php'; ?>
-<?php endif; ?>
+
 <?php
+    include '../src/auth/auth_check.php';
 
-    if (empty($_SESSION['uid'])) {
-        header('Location: login.php');
-        exit;
-    }
-
-    $cid      = intval($_GET['cid'] ?? 0);
-    $isMember = false;
-    $isAdmin  = false;
-    $groupName = '';
-    $groupDesc = '';
-    $members  = [];
-
-    if ($cid > 0) {
-        $stmt = $con->prepare("SELECT role FROM chat_user WHERE chat_id = :cid AND user_id = :uid");
-        $stmt->bindParam(':cid', $cid);
-        $stmt->bindParam(':uid', $_SESSION['uid']);
-        $stmt->execute();
-        $roleRow  = $stmt->fetch(PDO::FETCH_ASSOC);
-        $isMember = (bool) $roleRow;
-        $isAdmin  = ($roleRow && $roleRow['role'] === 'admin');
-
-        $stmt = $con->prepare("SELECT name, description FROM chat WHERE id = :cid");
-        $stmt->bindParam(':cid', $cid);
-        $stmt->execute();
-        $group     = $stmt->fetch(PDO::FETCH_ASSOC);
-        $groupName = htmlspecialchars($group['name'] ?? 'Group Chat');
-        $groupDesc = htmlspecialchars($group['description'] ?? '');
-
-        $stmt = $con->prepare("
-            SELECT u.id, u.name, cu.role, cu.nickname
-            FROM users u
-            JOIN chat_user cu ON cu.user_id = u.id
-            WHERE cu.chat_id = :cid
-            ORDER BY cu.role DESC, u.name ASC
-        ");
-        $stmt->bindParam(':cid', $cid);
-        $stmt->execute();
-        $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 ?>
 <script src="assets/js/chat.js" defer></script>
 <body class="bg-light">
 
 <div class="container py-3">
 
-    <div class="dropdown mb-3">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            About
-        </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="group_files.php?cid=<?=$cid?>">View Files</a></li>
-            <li><a class="dropdown-item" href="invite.php?cid=<?=$cid?>">Invite Members</a></li>
-                <?php if ($isAdmin): ?>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="edit_group.php?cid=<?=$cid?>">Edit Group</a></li>
-            <?php endif; ?>
-            <?php if ($isMember): ?>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <button class="dropdown-item text-danger" type="button"
-                        onclick="if(confirm('Are you sure you want to leave this group?')) document.getElementById('leaveForm').submit()">
-                    Leave Group
-                </button>
-            </li>
-            <?php endif; ?>
-            <?php if ($isAdmin): ?>
-            <li>
-                <button class="dropdown-item text-danger" type="button"
-                        onclick="if(confirm('Permanently delete this group? This cannot be undone.')) document.getElementById('deleteForm').submit()">
-                    Delete Group
-                </button>
-            </li>
-            <?php endif; ?>
-        </ul>
-    </div>
-
-    <?php if ($isMember): ?>
-    <form id="leaveForm" method="POST" action="../src/groups/leave_group.php">
-        <input type="hidden" name="cid" value="<?=$cid?>">
-    </form>
-    <?php endif; ?>
-    <?php if ($isAdmin): ?>
-    <form id="deleteForm" method="POST" action="../src/groups/delete_group.php">
-        <input type="hidden" name="cid" value="<?=$cid?>">
-    </form>
-    <?php endif; ?>
-
+    <!-- Header -->
     <div class="chat-panel shadow-sm mb-3">
-        <div class="chat-panel-body py-2 px-3 d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">💬 <?= $groupName ?></h5>
-            <button class="btn btn-sm btn-outline-secondary" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#memberPanel" aria-expanded="false">
-                👥 <?= count($members) ?> members
-            </button>
-        </div>
-        <div class="collapse" id="memberPanel">
-            <?php if ($groupDesc): ?>
-            <div class="px-3 py-2 border-top text-muted small fst-italic"><?= $groupDesc ?></div>
-            <?php endif; ?>
-            <ul class="list-group list-group-flush border-top">
-                <?php foreach ($members as $m): ?>
-                <?php
-                    $displayName  = htmlspecialchars($m['nickname'] ?? $m['name']);
-                    $realName     = htmlspecialchars($m['name']);
-                    $canNickname  = $isAdmin || $m['id'] == $_SESSION['uid'];
-                ?>
-                <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
-                    <span>
-                        <?= $displayName ?>
-                        <?php if (!empty($m['nickname'])): ?>
-                        <small class="text-muted ms-1">(<?= $realName ?>)</small>
-                        <?php endif; ?>
-                    </span>
-                    <div class="d-flex align-items-center gap-2">
-                        <?php if ($m['role'] === 'admin'): ?>
-                        <span class="badge bg-warning text-dark">admin</span>
-                        <?php endif; ?>
-                        <?php if ($canNickname): ?>
-                        <button class="btn btn-sm btn-outline-secondary py-0 px-2"
-                                onclick="setNickname(<?=$cid?>, <?=$m['id']?>, <?= json_encode($m['nickname'] ?? '') ?>)">
-                            ✏️
-                        </button>
-                        <?php endif; ?>
-                        <?php if ($isAdmin && $m['id'] != $_SESSION['uid']): ?>
-                        <button class="btn btn-sm btn-outline-secondary py-0 px-2"
-                                onclick="manageMember(<?=$cid?>, <?=$m['id']?>, '<?= $m['role'] === 'admin' ? 'demote' : 'promote' ?>')">
-                            <?= $m['role'] === 'admin' ? 'Remove Admin' : 'Make Admin' ?>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger py-0 px-2"
-                                onclick="manageMember(<?=$cid?>, <?=$m['id']?>, 'kick')">
-                            Kick
-                        </button>
-                        <?php endif; ?>
-                    </div>
-                </li>
-                <?php endforeach; ?>
-            </ul>
+        <div class="chat-panel-body py-2 px-3">
+            <h5 class="mb-0">💬 Chat</h5>
         </div>
     </div>
 
+    <!-- Chat box -->
     <div class="chat-panel shadow-sm">
         <div class="chat-panel-body p-0">
 
             <div id="messageContainer" class="chat-box p-3 overflow-auto"></div>
 
-            <div id="fileUploadFeedback" class="px-3 pt-2 small d-none"></div>
-            <form id="chatForm" class="border-top p-2 d-flex gap-2 bg-white align-items-center">
-                <input
-                    type="text"
-                    id="message"
-                    class="form-control"
+            <!-- Input -->
+            <form id="chatForm" class="border-top p-2 d-flex gap-2 bg-white">
+                <input 
+                    type="text" 
+                    id="message" 
+                    class="form-control" 
                     placeholder="Type a message..."
                     autocomplete="off"
                 >
@@ -175,46 +48,11 @@
                 <input type="hidden" id="uid_reference" value="<?= $_SESSION['uid'] ?>">
                 <input type="hidden" id="loadCount" value="1">
             </form>
-            <script>
-                document.getElementById('fileInput').addEventListener('change', async function () {
-                    const file = this.files[0];
-                    if (!file) return;
-
-                    const feedback = document.getElementById('fileUploadFeedback');
-                    feedback.textContent = 'Uploading…';
-                    feedback.className = 'px-3 pt-2 small text-muted';
-
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('cid', document.getElementById('chatId').value);
-
-                    try {
-                        const res = await fetch('../src/api/uploadFile.php', { method: 'POST', body: formData });
-                        const data = await res.json();
-
-                        if (data.status === 'success') {
-                            feedback.textContent = '✓ File uploaded successfully.';
-                            feedback.className = 'px-3 pt-2 small text-success';
-                        } else {
-                            feedback.textContent = '✗ ' + data.message;
-                            feedback.className = 'px-3 pt-2 small text-danger';
-                        }
-                    } catch (e) {
-                        feedback.textContent = '✗ Upload failed.';
-                        feedback.className = 'px-3 pt-2 small text-danger';
-                    }
-
-                    this.value = '';
-                    setTimeout(() => { feedback.className = 'px-3 pt-2 small d-none'; }, 4000);
-                });
-            </script>
 
         </div>
     </div>
 
 </div>
 
-<?php if (empty($embedded)): ?>
 </body>
 </html>
-<?php endif; ?>
