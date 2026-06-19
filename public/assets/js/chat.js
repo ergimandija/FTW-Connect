@@ -1,16 +1,17 @@
 
 const container = document.getElementById("messageContainer");
-const chatId    = document.getElementById("chatId").value;
-let firstTime   = true;
-let allLoaded   = false;
-
-const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+let firstTime = true;
+let allLoaded = false; 
 
 
 container.addEventListener("scroll", () => {
     if (container.scrollTop <= 10 && !allLoaded) {
+        isLoading = true;
+
         const input = document.getElementById("loadCount");
         input.value = parseInt(input.value, 10) + 1;
+
+       
     }
 });
 
@@ -54,47 +55,10 @@ document.getElementById("chatForm").addEventListener("submit", (e) => {
 });   
 
 
-function showEmojiPicker(e, messageId) {
-    e.stopPropagation();
-    document.querySelectorAll(".emoji-picker").forEach(p => p.remove());
 
-    const rect   = e.target.getBoundingClientRect();
-    const picker = document.createElement("div");
-    picker.classList.add("emoji-picker");
-    picker.style.top  = (rect.top - 48 + window.scrollY) + "px";
-    picker.style.left = rect.left + "px";
-
-    EMOJIS.forEach(emoji => {
-        const btn = document.createElement("button");
-        btn.textContent = emoji;
-        btn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            toggleReaction(messageId, emoji);
-            picker.remove();
-        });
-        picker.appendChild(btn);
-    });
-
-    document.body.appendChild(picker);
-    setTimeout(() => {
-        document.addEventListener("click", () => picker.remove(), { once: true });
-    }, 0);
-}
-
-
-function toggleReaction(messageId, emoji) {
-    fetch("../src/api/toggleReaction.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mid: messageId, emoji })
-    })
-    .then(res => res.json())
-    .then(data => console.log(data));
-}
-
-
-function loadMessages() {
-    fetch("../src/api/getMessage.php?cid=" + chatId
+function loadMessages(){
+    fetch("../src/api/getMessage.php?cid=" 
+        + document.getElementById("chatId").value 
         + "&loadCount=" + document.getElementById("loadCount").value)
         .then(res => res.json())
         .then((data) => {
@@ -224,57 +188,16 @@ function loadMessages() {
         container.appendChild(row);
     });
 
-        if (firstTime) {
+        if(firstTime){
             container.scrollTop = container.scrollHeight;
             firstTime = false;
         }
 
-        if (data.limit >= data.total) allLoaded = true;
-
-        if (data.messages && data.messages.length > 0) {
-            const latest = data.messages[data.messages.length - 1].sent_at;
-            localStorage.setItem("chat_read_" + chatId, latest);
+        if (data.limit >= data.total) {
+            allLoaded = true;
         }
     });
 }
 
+setInterval(loadMessages,2000);
 
-function setNickname(cid, uid, current) {
-    const input = prompt("Set nickname (leave blank to clear):", current);
-    if (input === null) return;
-
-    fetch("../src/api/setNickname.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cid, uid, nickname: input.trim() })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "ok") location.reload();
-        else alert("Error: " + data.message);
-    });
-}
-
-
-function manageMember(cid, uid, action) {
-    const messages = {
-        kick:    "Are you sure you want to kick this member?",
-        promote: "Make this member an admin?",
-        demote:  "Remove admin rights from this member?",
-    };
-    if (!confirm(messages[action])) return;
-
-    fetch("../src/api/manageMember.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cid, uid, action })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "ok") location.reload();
-        else alert("Error: " + data.message);
-    });
-}
-
-
-setInterval(loadMessages, 2000);
