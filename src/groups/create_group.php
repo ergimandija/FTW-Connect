@@ -5,6 +5,11 @@ $errors = [];
 $success = "";
 $createdChatId = null;
 
+if (empty($_SESSION['uid'])) {
+    header('Location: login.php');
+    exit;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $groupName        = trim($_POST["name"] ?? "");
@@ -55,9 +60,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (empty($errors)) {
 
         try {
-            // Insert chat
             $stmt = $con->prepare("
-                INSERT INTO chat (name, description, picture) 
+                INSERT INTO chat (name, description, picture)
                 VALUES (:name, :description, :picture)
             ");
 
@@ -69,9 +73,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $createdChatId = $con->lastInsertId();
 
-            // Insert user into chat
             $memberStmt = $con->prepare("
-                INSERT INTO chat_user (chat_id, user_id, role, type) 
+                INSERT INTO chat_user (chat_id, user_id, role, type)
                 VALUES (:chat_id, :user_id, :role, :type)
             ");
 

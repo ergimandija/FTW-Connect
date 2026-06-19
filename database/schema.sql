@@ -18,6 +18,7 @@ CREATE TABLE Chat (
     name VARCHAR(255),
     description TEXT,
     picture VARCHAR(255),
+    pinned_message_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -77,6 +78,8 @@ CREATE TABLE Chat_User (
     user_id INT,
     role VARCHAR(50),
     type VARCHAR(50),
+    nickname VARCHAR(255) NULL,
+    archived TINYINT DEFAULT 0,
 
     PRIMARY KEY (chat_id, user_id),
 
@@ -91,6 +94,7 @@ CREATE TABLE Chat_User (
     ON DELETE CASCADE
 );
 
+<<<<<<< HEAD
 CREATE TABLE contact_message (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -98,4 +102,47 @@ CREATE TABLE contact_message (
     subject VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+=======
+CREATE TABLE Invitation (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chat_id INT NOT NULL,
+    invited_by INT NOT NULL,
+    invited_user INT NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_invite (chat_id, invited_user),
+
+    CONSTRAINT fkinchat
+    FOREIGN KEY (chat_id)
+    REFERENCES chat(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fkinvby
+    FOREIGN KEY (invited_by)
+    REFERENCES users(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fkinvuser
+    FOREIGN KEY (invited_user)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE Message_Reaction (
+    message_id INT NOT NULL,
+    user_id INT NOT NULL,
+    emoji VARCHAR(10) NOT NULL,
+    PRIMARY KEY (message_id, user_id, emoji),
+
+    CONSTRAINT fk_react_msg
+    FOREIGN KEY (message_id)
+    REFERENCES Message(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_react_usr
+    FOREIGN KEY (user_id)
+    REFERENCES Users(id)
+    ON DELETE CASCADE
+>>>>>>> groups
 );

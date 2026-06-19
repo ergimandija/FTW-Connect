@@ -1,14 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<?php 
-include '../src/includes/header.php';
-
-include '../src/auth/auth_check.php';
-?>
-<?php require_once __DIR__ . '/../src/groups/create_group.php'; ?>
+<?php include '../src/includes/header.php';?>
+<?php require_once __DIR__ . '/../src/groups/edit_group.php'; ?>
 <link rel="stylesheet" href="./assets/styles/create_group.css">
-
 
 <body>
 <div class="container-fluid h-100">
@@ -17,30 +12,40 @@ include '../src/auth/auth_check.php';
         <div class="col-md-6 d-flex align-items-center justify-content-center">
             <div style="width: 100%; max-width: 420px; padding: 20px;">
 
+                <?php if ($accessDenied): ?>
+                    <div class="alert alert-danger">
+                        You do not have permission to edit this group.
+                    </div>
+                    <a href="chat.php?cid=<?= $cid ?>" class="btn btn-secondary">Back to Chat</a>
+                <?php else: ?>
+
                 <div class="text-center d-md-none mb-4">
                     <img src="assets/img/logo.png" alt="Logo" class="img-fluid mb-3" style="max-width: 300px;">
                 </div>
 
-                <h3 class="mb-2">Create a group</h3>
-                <p class="text-muted mb-4">Set up a new group to start collaborating.</p>
+                <h3 class="mb-2">Edit Group</h3>
+                <p class="text-muted mb-4">Update your group's name, description, or picture.</p>
 
                 <div class="text-center mb-3">
-                    <?php
-                    if (!empty($errors)) {
-                        foreach ($errors as $error) {
-                            echo "<p class='text-danger'>" . htmlspecialchars($error) . "</p>";
-                        }
-                    }
-                    if (!empty($success)) {
-                        echo "<p class='text-success'>" . htmlspecialchars($success) . "</p>";
-                        if ($createdChatId) {
-                            echo "<a href='chat.php?cid=" . (int)$createdChatId . "' class='btn btn-sm login-btn text-white mt-1'>Go to group</a>";
-                        }
-                    }
-                    ?>
+                    <?php if (!empty($errors)): ?>
+                        <?php foreach ($errors as $error): ?>
+                            <p class="text-danger"><?= htmlspecialchars($error) ?></p>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    <?php if (!empty($success)): ?>
+                        <p class="text-success"><?= htmlspecialchars($success) ?></p>
+                    <?php endif; ?>
                 </div>
 
-                <form method="POST" action="create_group.php" enctype="multipart/form-data">
+                <?php if ($groupPicture): ?>
+                <div class="text-center mb-3">
+                    <img src="<?= htmlspecialchars($groupPicture) ?>" alt="Group Picture"
+                         style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                    <p class="text-muted small mt-1">Current picture</p>
+                </div>
+                <?php endif; ?>
+
+                <form method="POST" action="edit_group.php?cid=<?= $cid ?>" enctype="multipart/form-data">
 
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold">GROUP NAME</label>
@@ -74,19 +79,21 @@ include '../src/auth/auth_check.php';
                             class="form-control"
                             accept=".jpg,.jpeg,.png,.gif,.webp"
                         >
-                        <div class="form-text">Max 2MB. Allowed: jpg, jpeg, png, gif, webp.</div>
+                        <div class="form-text">Max 2MB. Allowed: jpg, jpeg, png, gif, webp. Leave empty to keep current picture.</div>
                     </div>
 
                     <div class="d-grid mt-4">
                         <button type="submit" class="btn login-btn text-white">
-                            Create Group
+                            Save Changes
                         </button>
                     </div>
                 </form>
 
                 <p class="mt-4 text-muted text-center">
-                    <a href="userchats.php" class="accent-text">Back to chats</a>
+                    <a href="chat.php?cid=<?= $cid ?>" class="accent-text">Back to chat</a>
                 </p>
+
+                <?php endif; ?>
 
             </div>
         </div>

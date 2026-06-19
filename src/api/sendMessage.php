@@ -2,6 +2,7 @@
 header('Content-Type: application/json');
 include '../../config/config.php';
 include '../includes/crypto.php';
+include '../utils/moderator.php';
 
 try{ 
 $data = json_decode(file_get_contents("php://input"), true);
@@ -27,8 +28,10 @@ if(!empty($check['chat_id'])){
 $stmt = $con->prepare('INSERT INTO message(chat_id,sender_id,content,picturePath) VALUES(:chatId,:id,:message,:picturePath)');
 $stmt->bindParam(":chatId", $data['cid']);
 $stmt->bindParam(":id", $_SESSION['uid']);
-$message = $data['message'];
+
+$message = Moderator::filter($data['message']);
 $attachedPicture = ($data['attachedPicture']=='')?null:$data['attachedPicture'];
+
 $encryptedMessage = Crypto::encrypt($message);
 $stmt->bindParam(":message", $encryptedMessage);
 $stmt->bindParam(":picturePath", $attachedPicture);

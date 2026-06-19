@@ -24,6 +24,7 @@ include '../src/auth/auth_check.php';
 
 <script src="assets/js/userchats.js" defer></script>
 
+
 <div class="conversation-page d-flex">
 
     <aside class="conversation-sidebar p-3">
@@ -41,6 +42,10 @@ include '../src/auth/auth_check.php';
                     Search
                 </button>
             </div>
+        </div>
+
+        <div class="mb-3">
+            <a href="invitations.php" class="btn btn-outline-primary btn-sm w-100">Invitations</a>
         </div>
 
         <div id="userList-container" class="chat-list mb-3">
@@ -65,6 +70,7 @@ include '../src/auth/auth_check.php';
 
         <?php
         if (isset($_GET['cid'])) {
+            $embedded = true;
             include 'chat.php';
         } else {
         ?>
