@@ -47,6 +47,10 @@ include '../src/auth/auth_check.php';
         <div class="mb-3">
             <a href="invitations.php" class="btn btn-outline-primary btn-sm w-100">Invitations</a>
         </div>
+        
+        <div class="mb-3">
+            <a href="create_group.php" class="btn btn-outline-primary btn-sm w-100">Create group</a>
+        </div>
 
         <div id="userList-container" class="chat-list mb-3">
             <button 
