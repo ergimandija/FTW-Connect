@@ -170,9 +170,15 @@ function formatLastSeen($timestamp) {
             <?php if($isOwnProfile): ?>
             <div class="post-card p-4">
                 <h5 class="mb-3">Create a Post</h5>
-                <form action="backend/create_post.php" method="POST">
+                <form action="../src/api/create_post.php" method="POST" enctype="multipart/form-data">
                     <input type="text" name="title" class="form-control mb-2" placeholder="Post title" required>
+
                     <textarea name="content" class="form-control mb-3" rows="3" placeholder="Share your thoughts..."></textarea>
+
+                    <div class="mb-3">
+                        <input type="file" name="post_image" class="form-control" accept="image/*">
+                    </div>
+
                     <div class="text-end">
                         <button type="submit" class="btn btn-outline-ftw">Post</button>
                     </div>
