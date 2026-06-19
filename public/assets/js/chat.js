@@ -17,7 +17,6 @@ container.addEventListener("scroll", () => {
 
 document.getElementById("chatForm").addEventListener("submit", (e) => {
     e.preventDefault();
-<<<<<<< HEAD
     console.log(document.getElementById("chatId").value);
     if(document.getElementById("message").value.length != 0){
     fetch("../src/api/sendMessage.php",{
@@ -31,19 +30,9 @@ document.getElementById("chatForm").addEventListener("submit", (e) => {
             attachedPicture: document.getElementById("fileInput").files[0]?.name || ''
         })
          
-=======
-    const msgInput = document.getElementById("message");
-    if (msgInput.value.length === 0) return;
-
-    fetch("../src/api/sendMessage.php", {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({ message: msgInput.value, cid: chatId })
->>>>>>> groups
     })
         .then(res => res.text())
         .then(data => console.log(data));
-<<<<<<< HEAD
         document.getElementById("message").value = "";
 
     const fileInput = document.getElementById("fileInput");
@@ -63,11 +52,6 @@ document.getElementById("chatForm").addEventListener("submit", (e) => {
     });  
     }
 });   
-=======
-
-    msgInput.value = "";
-});
->>>>>>> groups
 
 
 function showEmojiPicker(e, messageId) {
@@ -112,7 +96,6 @@ function toggleReaction(messageId, emoji) {
 function loadMessages() {
     fetch("../src/api/getMessage.php?cid=" + chatId
         + "&loadCount=" + document.getElementById("loadCount").value)
-<<<<<<< HEAD
         .then(res => res.json())
         .then((data) => {
 
@@ -227,57 +210,6 @@ function loadMessages() {
 
         // order depends on left/right alignment
         if (isMine) {
-=======
-    .then(res => res.json())
-    .then((data) => {
-        container.replaceChildren();
-
-        data['messages'].forEach(element => {
-            const isMine = element.sender_id == document.getElementById("uid_reference").value;
-
-            const row = document.createElement("div");
-            row.classList.add("msg-row", isMine ? "right" : "left");
-
-            const bubble = document.createElement("div");
-            bubble.classList.add("msg-bubble", isMine ? "sent" : "received");
-
-            if (!isMine) {
-                const sender = document.createElement("div");
-                sender.classList.add("msg-sender");
-                sender.textContent = element.sender_name;
-                bubble.appendChild(sender);
-            }
-
-            const content = document.createElement("div");
-            content.textContent = element.content;
-
-            const time = document.createElement("div");
-            time.classList.add("msg-time");
-            time.textContent = element.sent_at;
-
-            bubble.appendChild(content);
-            bubble.appendChild(time);
-
-            const reactBar = document.createElement("div");
-            reactBar.classList.add("react-bar");
-
-            (element.reactions || []).forEach(r => {
-                const pill = document.createElement("button");
-                pill.classList.add("react-pill");
-                if (r.user_reacted) pill.classList.add("reacted");
-                pill.textContent = `${r.emoji} ${r.count}`;
-                pill.addEventListener("click", () => toggleReaction(element.id, r.emoji));
-                reactBar.appendChild(pill);
-            });
-
-            const addBtn = document.createElement("button");
-            addBtn.classList.add("react-add");
-            addBtn.textContent = "+";
-            addBtn.addEventListener("click", (e) => showEmojiPicker(e, element.id));
-            reactBar.appendChild(addBtn);
-
-            bubble.appendChild(reactBar);
->>>>>>> groups
             row.appendChild(bubble);
             row.appendChild(avatar);
             actions.appendChild(editBtn);
