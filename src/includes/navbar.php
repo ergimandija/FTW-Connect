@@ -24,17 +24,22 @@ $isLoggedIn = isset($_SESSION['uid']);
     <nav class="nav-menu">
       <a href="./index.php" class="nav-item">Home</a>
 
+
       <?php if ($isLoggedIn): ?>
         <a href="./feed.php" class="nav-item">Feed</a>
         <a href="./userchats.php" class="nav-item">Messages</a>
         <a href="./profile.php" class="nav-item">Profile</a>
+        <a href="./aboutus.php" class="nav-item">About Us</a>
+        <a href="./contact.php" class="nav-item">Contact Us</a>
         <a href="./logout.php" class="nav-item">Logout</a>
       <?php else: ?>
+        <a href="./aboutus.php" class="nav-item">About Us</a>
+        <a href="./contact.php" class="nav-item">Contact Us</a>
         <a href="./login.php" class="nav-item">Login</a>
         <a href="./register.php" class="nav-item">Register</a>
       <?php endif; ?>
 
-      <a href="./aboutus.php" class="nav-item">About Us</a>
+      
 
     </nav>
 
