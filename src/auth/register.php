@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $con->commit();
 
-            $verifyLink = "http://localhost:3000/public/verify_email.php?token=" . urlencode($verificationToken);
+            $verifyLink = "http://localhost/ftwconnect/public/verify_email.php?token=" . urlencode($verificationToken);
 
             $mail = new PHPMailer(true);
 
